@@ -2,209 +2,94 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BANKRUPTT</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>BANKRUPTT - 3D Open World</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-    body { background-color: #1a1e2e; color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; height: 100vh; }
-    
-    #canvas-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; }
+    body { background: #000; color: #fff; font-family: 'Segoe UI', Tahoma, sans-serif; overflow: hidden; height: 100vh; }
+    #canvas-container { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
 
     /* Top HUD */
     #hud {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      right: 10px;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      gap: 6px;
-      background: rgba(15, 23, 42, 0.95);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      backdrop-filter: blur(12px);
-      padding: 10px 14px;
-      border-radius: 12px;
-      z-index: 10;
+      position: absolute; top: 10px; left: 10px; right: 10px;
+      display: flex; justify-content: space-between; align-items: center;
+      background: rgba(15, 23, 42, 0.9); padding: 8px 14px;
+      border-radius: 12px; border: 1px solid rgba(255,255,255,0.15);
+      z-index: 10; font-size: 13px; font-weight: bold;
     }
-    .metric { display: flex; flex-direction: column; gap: 2px; }
-    .metric-title { font-size: 9px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.6px; }
-    .metric-value { font-size: 14px; font-weight: 700; }
-    .status-badge {
-      padding: 4px 10px;
-      border-radius: 6px;
-      font-weight: 800;
-      text-transform: uppercase;
-      font-size: 11px;
-      letter-spacing: 0.5px;
-      align-self: center;
-    }
-    .status-stable { background: #10b981; color: #fff; }
-    .status-struggling { background: #f59e0b; color: #111; }
-    .status-debt { background: #f97316; color: #111; }
-    .status-broke { background: #ef4444; color: #fff; }
-    .status-bankrupt { background: #7f1d1d; color: #fff; }
+    .hud-val { color: #4ade80; }
+    .debt-val { color: #f87171; }
 
-    /* Action Deck */
-    #action-bar {
-      position: absolute;
-      bottom: 14px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 6px;
-      width: 96%;
-      max-width: 560px;
-      background: rgba(15, 23, 42, 0.96);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      padding: 8px;
-      border-radius: 14px;
-      backdrop-filter: blur(12px);
-      z-index: 10;
+    /* Floating Interaction Prompt */
+    #interact-prompt {
+      position: absolute; top: 75%; left: 50%; transform: translate(-50%, -50%);
+      background: #2563eb; color: #fff; padding: 12px 24px; border-radius: 30px;
+      font-weight: bold; font-size: 15px; box-shadow: 0 4px 20px rgba(37,99,235,0.6);
+      display: none; z-index: 20; border: 2px solid #fff; cursor: pointer;
     }
-    button.game-btn {
-      background: #1e293b;
-      color: #fff;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      padding: 8px 4px;
-      border-radius: 8px;
-      font-size: 11px;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-    }
-    button.game-btn:active { background: #3b82f6; transform: scale(0.96); }
-    button.game-btn small { font-size: 8px; color: #94a3b8; text-align: center; }
 
-    /* Modals */
-    .modal-overlay {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 92%;
-      max-width: 440px;
-      background: #0f172a;
-      border: 1px solid #3b82f6;
-      border-radius: 16px;
-      padding: 22px;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.95);
-      z-index: 20;
-      display: none;
+    /* Mobile Joystick Controls */
+    #dpad {
+      position: absolute; bottom: 25px; left: 25px;
+      width: 130px; height: 130px; z-index: 10;
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px;
     }
-    .modal-header { font-size: 17px; color: #60a5fa; margin-bottom: 8px; font-weight: 700; }
-    .modal-body { font-size: 13px; line-height: 1.5; color: #cbd5e1; margin-bottom: 16px; }
-    .modal-choices { display: flex; flex-direction: column; gap: 8px; }
-    .modal-choices button {
-      background: #1e293b;
-      border: 1px solid rgba(255,255,255,0.15);
-      color: #fff;
-      padding: 10px 12px;
-      border-radius: 8px;
-      font-size: 12px;
-      text-align: left;
-      cursor: pointer;
-      line-height: 1.35;
+    .dpad-btn {
+      background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 10px; color: #fff; font-size: 18px; font-weight: bold;
+      display: flex; align-items: center; justify-content: center;
     }
-    .modal-choices button:hover { background: #2563eb; }
-    .btn-action {
-      background: #2563eb;
-      color: #fff;
-      border: none;
-      padding: 10px;
-      border-radius: 8px;
-      font-weight: bold;
-      width: 100%;
-      cursor: pointer;
-      margin-top: 8px;
+    .dpad-btn:active { background: #3b82f6; }
+
+    /* Dialog Popups */
+    #dialog {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      width: 88%; max-width: 400px; background: #0f172a; border: 2px solid #3b82f6;
+      border-radius: 16px; padding: 20px; z-index: 30; display: none;
     }
+    #dialog h2 { font-size: 18px; color: #60a5fa; margin-bottom: 8px; }
+    #dialog p { font-size: 13px; line-height: 1.4; color: #cbd5e1; margin-bottom: 15px; }
+    .dialog-btn {
+      width: 100%; padding: 10px; margin-bottom: 8px; background: #1e293b;
+      border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 8px;
+      font-weight: 600; cursor: pointer; text-align: left;
+    }
+    .dialog-btn:hover { background: #2563eb; }
   </style>
 </head>
 <body>
 
   <div id="hud">
-    <div class="metric">
-      <span class="metric-title">Date</span>
-      <span id="date-val" class="metric-value">Jan 2008</span>
-    </div>
-    <div class="metric">
-      <span class="metric-title">Cash</span>
-      <span id="cash-val" class="metric-value" style="color: #4ade80;">$1,200</span>
-    </div>
-    <div class="metric">
-      <span class="metric-title">Debt</span>
-      <span id="debt-val" class="metric-value" style="color: #f87171;">$2,500</span>
-    </div>
-    <div class="metric">
-      <span class="metric-title">Bitcoin</span>
-      <span id="btc-val" class="metric-value" style="color: #f59e0b;">0 BTC</span>
-    </div>
-    <div class="metric">
-      <span class="metric-title">BTC Price</span>
-      <span id="btc-price" class="metric-value" style="color: #fbbf24;">$0.00</span>
-    </div>
-    <div class="metric">
-      <span class="metric-title">Energy</span>
-      <span id="energy-val" class="metric-value">100%</span>
-    </div>
-    <div id="status-val" class="status-badge status-struggling">STRUGGLING</div>
+    <div>📅 <span id="hud-date">Jan 2008</span></div>
+    <div>💵 <span id="hud-cash" class="hud-val">$1,200</span></div>
+    <div>💳 <span id="hud-debt" class="debt-val">$2,500</span></div>
+    <div>⚡ <span id="hud-energy">100%</span></div>
+    <div>₿ <span id="hud-btc" style="color:#fbbf24;">0 BTC</span></div>
   </div>
 
   <div id="canvas-container"></div>
 
-  <div id="action-bar">
-    <button class="game-btn" onclick="game.work()">
-      💼 Work
-      <small>+$420, -25%</small>
-    </button>
-    <button class="game-btn" onclick="game.rest()">
-      ☕ Rest
-      <small>-$50, +30%</small>
-    </button>
-    <button class="game-btn" onclick="game.payDebt()">
-      💳 Pay Debt
-      <small>-$300 Debt</small>
-    </button>
-    <button class="game-btn" onclick="game.openTradeModal()">
-      ₿ Trade BTC
-      <small>Buy / Sell</small>
-    </button>
-    <button class="game-btn" onclick="game.endMonth()">
-      🗓️ End Month
-      <small>Advance Time</small>
-    </button>
+  <div id="interact-prompt" onclick="world.triggerInteraction()">TAP TO ENTER</div>
+
+  <!-- Mobile On-Screen D-Pad -->
+  <div id="dpad">
+    <div></div>
+    <div class="dpad-btn" id="btn-up">▲</div>
+    <div></div>
+    <div class="dpad-btn" id="btn-left">◀</div>
+    <div></div>
+    <div class="dpad-btn" id="btn-right">▶</div>
+    <div></div>
+    <div class="dpad-btn" id="btn-down">▼</div>
+    <div></div>
   </div>
 
-  <!-- Macro Event Modal -->
-  <div id="event-modal" class="modal-overlay">
-    <div id="modal-title" class="modal-header">Macro Event</div>
-    <div id="modal-desc" class="modal-body">Event details...</div>
-    <div id="modal-choices" class="modal-choices"></div>
-  </div>
-
-  <!-- Trade Modal -->
-  <div id="trade-modal" class="modal-overlay">
-    <div class="modal-header">₿ Bitcoin Ledger</div>
-    <div id="trade-body" class="modal-body">Current BTC Price: $0.00</div>
-    <div class="modal-choices">
-      <button onclick="game.buyBTC(100)">Buy $100 of BTC</button>
-      <button onclick="game.buyBTC(500)">Buy $500 of BTC</button>
-      <button onclick="game.sellBTC(0.5)">Sell 50% of Holdings</button>
-      <button onclick="game.sellBTC(1.0)">Sell 100% of Holdings</button>
-    </div>
-    <button class="btn-action" style="background: #334155;" onclick="document.getElementById('trade-modal').style.display='none'">Close</button>
-  </div>
-
-  <!-- Summary Ending Screen -->
-  <div id="ending-modal" class="modal-overlay">
-    <div id="ending-title" class="modal-header" style="font-size: 20px;">Game Over</div>
-    <div id="ending-desc" class="modal-body" style="font-size: 14px;">Summary...</div>
-    <div id="ending-stats" class="modal-body" style="background: rgba(0,0,0,0.4); padding: 12px; border-radius: 8px; font-family: monospace;"></div>
-    <button class="btn-action" onclick="game.restart()">🔄 Start New Journey</button>
+  <!-- Interactive Building Modal -->
+  <div id="dialog">
+    <h2 id="dlg-title">Building</h2>
+    <p id="dlg-desc">Description</p>
+    <div id="dlg-actions"></div>
+    <button class="dialog-btn" style="background:#475569; text-align:center;" onclick="document.getElementById('dialog').style.display='none'">Exit Building</button>
   </div>
 
   <script type="importmap">
@@ -218,149 +103,263 @@
   <script type="module">
     import * as THREE from 'three';
 
-    // --- 3D Scene Initialization ---
-    const container = document.getElementById('canvas-container');
+    // --- 1. 3D Scene & City Setup ---
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x1a1e2e);
+    scene.background = new THREE.Color(0x87ceeb);
+    scene.fog = new THREE.Fog(0x87ceeb, 20, 60);
 
-    const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(13, 11, 13);
-    camera.lookAt(0, 1.2, 0);
-
+    const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = true;
-    container.appendChild(renderer.domElement);
+    document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-    // --- Bright & Clear Lighting ---
-    const ambientLight = new THREE.AmbientLight(0xffffff, 2.0);
-    scene.add(ambientLight);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+    const sun = new THREE.DirectionalLight(0xfffaed, 1.2);
+    sun.position.set(20, 40, 20);
+    sun.castShadow = true;
+    scene.add(sun);
 
-    const roomLight = new THREE.PointLight(0xfff3e0, 2.5, 30);
-    roomLight.position.set(0, 8, 0);
-    scene.add(roomLight);
-
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
-    dirLight.position.set(10, 15, 8);
-    dirLight.castShadow = true;
-    scene.add(dirLight);
-
-    const monitorLight = new THREE.PointLight(0x38bdf8, 3.5, 6);
-    monitorLight.position.set(-2.4, 2.2, -2.4);
-    scene.add(monitorLight);
-
-    // --- Room Geometry with High-Contrast Colors ---
-    // Floor
-    const floorMat = new THREE.MeshStandardMaterial({ color: 0x5a4d41, roughness: 0.6 });
-    const floor = new THREE.Mesh(new THREE.BoxGeometry(9, 0.4, 9), floorMat);
-    floor.position.y = -0.2;
-    floor.receiveShadow = true;
-    scene.add(floor);
-
-    // Back Walls
-    const wallMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.8 });
-    const backWall1 = new THREE.Mesh(new THREE.BoxGeometry(0.3, 6, 9), wallMat);
-    backWall1.position.set(-4.5, 2.8, 0);
-    scene.add(backWall1);
-
-    const backWall2 = new THREE.Mesh(new THREE.BoxGeometry(9, 6, 0.3), wallMat);
-    backWall2.position.set(0, 2.8, -4.5);
-    scene.add(backWall2);
-
-    // Window
-    const winGlass = new THREE.Mesh(
-      new THREE.PlaneGeometry(2.5, 3),
-      new THREE.MeshBasicMaterial({ color: 0x93c5fd, transparent: true, opacity: 0.7 })
+    // Ground / Asphalt Road
+    const ground = new THREE.Mesh(
+      new THREE.PlaneGeometry(80, 80),
+      new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.8 })
     );
-    winGlass.position.set(1.5, 3.2, -4.34);
-    scene.add(winGlass);
+    ground.rotation.x = -Math.PI / 2;
+    ground.receiveShadow = true;
+    scene.add(ground);
 
-    // Blue Area Rug
-    const rug = new THREE.Mesh(
-      new THREE.PlaneGeometry(4.5, 3.5),
-      new THREE.MeshStandardMaterial({ color: 0x2563eb, roughness: 0.9 })
+    // Sidewalk
+    const sidewalk = new THREE.Mesh(
+      new THREE.PlaneGeometry(30, 30),
+      new THREE.MeshStandardMaterial({ color: 0x94a3b8 })
     );
-    rug.rotation.x = -Math.PI / 2;
-    rug.position.set(0, 0.01, 0.5);
-    scene.add(rug);
+    sidewalk.rotation.x = -Math.PI / 2;
+    sidewalk.position.y = 0.05;
+    scene.add(sidewalk);
 
-    // Desk
-    const deskMat = new THREE.MeshStandardMaterial({ color: 0x854d0e });
-    const desk = new THREE.Mesh(new THREE.BoxGeometry(3.2, 1.4, 1.6), deskMat);
-    desk.position.set(-2.4, 0.7, -2.8);
-    desk.castShadow = true;
-    scene.add(desk);
+    // --- 2. Interactive City Buildings ---
+    const zones = [
+      { name: "Apartment", color: 0x3b82f6, x: -8, z: -8, w: 6, h: 8, d: 6, label: "🏠 APARTMENT\n(Sleep / Advance Month)" },
+      { name: "Office", color: 0x10b981, x: 8, z: -8, w: 6, h: 12, d: 6, label: "💼 CORPORATE OFFICE\n(Work Shifts)" },
+      { name: "Bank", color: 0xef4444, x: -8, z: 8, w: 6, h: 6, d: 6, label: "🏦 CITY BANK\n(Pay Debt / Take Loans)" },
+      { name: "Market", color: 0xf59e0b, x: 8, z: 8, w: 6, h: 5, d: 6, label: "🛒 SUPERMARKET & BTC\n(Food / Ledger)" }
+    ];
 
-    // Computer Monitor
-    const monitor = new THREE.Mesh(
-      new THREE.BoxGeometry(1.4, 0.9, 0.1),
-      new THREE.MeshStandardMaterial({ color: 0x0f172a })
-    );
-    monitor.position.set(-2.4, 1.9, -3.1);
-    scene.add(monitor);
+    zones.forEach(zone => {
+      const bldgGeo = new THREE.BoxGeometry(zone.w, zone.h, zone.d);
+      const bldgMat = new THREE.MeshStandardMaterial({ color: zone.color, roughness: 0.5 });
+      const bldg = new THREE.Mesh(bldgGeo, bldgMat);
+      bldg.position.set(zone.x, zone.h / 2, zone.z);
+      bldg.castShadow = true;
+      bldg.receiveShadow = true;
+      scene.add(bldg);
+    });
 
-    // Glowing Blue CRT Screen
-    const screen = new THREE.Mesh(
-      new THREE.PlaneGeometry(1.3, 0.8),
-      new THREE.MeshBasicMaterial({ color: 0x38bdf8 })
-    );
-    screen.position.set(-2.4, 1.9, -3.04);
-    scene.add(screen);
+    // --- 3. Playable Character (Minecraft Style) ---
+    const player = new THREE.Group();
+    const bodyMat = new THREE.MeshStandardMaterial({ color: 0xef4444 });
+    const skinMat = new THREE.MeshStandardMaterial({ color: 0xfcd34d });
 
-    // Bed
-    const bed = new THREE.Mesh(
-      new THREE.BoxGeometry(2.6, 0.8, 4.4),
-      new THREE.MeshStandardMaterial({ color: 0x475569 })
-    );
-    bed.position.set(2.8, 0.4, -2);
-    scene.add(bed);
+    const body = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.0, 0.5), bodyMat);
+    body.position.y = 1.0;
+    body.castShadow = true;
+    player.add(body);
 
-    const pillow = new THREE.Mesh(
-      new THREE.BoxGeometry(1.8, 0.2, 0.8),
-      new THREE.MeshStandardMaterial({ color: 0xf8fafc })
-    );
-    pillow.position.set(2.8, 0.9, -3.5);
-    scene.add(pillow);
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.6, 0.6), skinMat);
+    head.position.y = 1.8;
+    head.castShadow = true;
+    player.add(head);
 
-    // Character
-    const characterGroup = new THREE.Group();
-    const torso = new THREE.Mesh(
-      new THREE.BoxGeometry(0.8, 0.9, 0.5),
-      new THREE.MeshStandardMaterial({ color: 0xef4444 }) // Red shirt for high visibility
-    );
-    torso.position.set(0, 1.5, 0);
-    characterGroup.add(torso);
+    scene.add(player);
 
-    const head = new THREE.Mesh(
-      new THREE.BoxGeometry(0.5, 0.5, 0.5),
-      new THREE.MeshStandardMaterial({ color: 0xfcd34d })
-    );
-    head.position.set(0, 2.2, 0);
-    characterGroup.add(head);
+    // --- 4. Controls & Movement Loop ---
+    const move = { forward: false, backward: false, left: false, right: false };
 
-    characterGroup.position.set(-2.4, 0, -1.6);
-    scene.add(characterGroup);
+    window.addEventListener('keydown', (e) => {
+      const k = e.key.toLowerCase();
+      if (k === 'w' || k === 'arrowup') move.forward = true;
+      if (k === 's' || k === 'arrowdown') move.backward = true;
+      if (k === 'a' || k === 'arrowleft') move.left = true;
+      if (k === 'd' || k === 'arrowright') move.right = true;
+    });
 
-    // Debt Paper Pile
-    const billGroup = new THREE.Group();
-    const paperMat = new THREE.MeshStandardMaterial({ color: 0xfef08a });
-    for (let i = 0; i < 6; i++) {
-      const paper = new THREE.Mesh(new THREE.PlaneGeometry(0.4, 0.6), paperMat);
-      paper.rotation.x = -Math.PI / 2;
-      paper.rotation.z = (Math.random() - 0.5) * 1.5;
-      paper.position.set(-1.4 + (Math.random() - 0.5) * 0.4, 0.02 + i * 0.005, -2.6 + (Math.random() - 0.5) * 0.4);
-      billGroup.add(paper);
+    window.addEventListener('keyup', (e) => {
+      const k = e.key.toLowerCase();
+      if (k === 'w' || k === 'arrowup') move.forward = false;
+      if (k === 's' || k === 'arrowdown') move.backward = false;
+      if (k === 'a' || k === 'arrowleft') move.left = false;
+      if (k === 'd' || k === 'arrowright') move.right = false;
+    });
+
+    // Mobile D-pad button events
+    const bindTouch = (id, dir) => {
+      const el = document.getElementById(id);
+      el.addEventListener('touchstart', (e) => { e.preventDefault(); move[dir] = true; });
+      el.addEventListener('touchend', (e) => { e.preventDefault(); move[dir] = false; });
+      el.addEventListener('mousedown', () => { move[dir] = true; });
+      el.addEventListener('mouseup', () => { move[dir] = false; });
+    };
+    bindTouch('btn-up', 'forward');
+    bindTouch('btn-down', 'backward');
+    bindTouch('btn-left', 'left');
+    bindTouch('btn-right', 'right');
+
+    // --- 5. Game Engine State ---
+    class GameWorld {
+      constructor() {
+        this.year = 2008;
+        this.month = 0;
+        this.months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        this.cash = 1200;
+        this.debt = 2500;
+        this.energy = 100;
+        this.btc = 0;
+        this.activeZone = null;
+        this.updateHUD();
+      }
+
+      getBTCPrice() {
+        if (this.year < 2010) return 0.00;
+        if (this.year === 2010) return 0.004;
+        if (this.year <= 2012) return 12;
+        if (this.year <= 2016) return 450;
+        if (this.year <= 2018) return 15000;
+        if (this.year <= 2020) return 9000;
+        return 55000;
+      }
+
+      updateHUD() {
+        document.getElementById('hud-date').innerText = `${this.months[this.month]} ${this.year}`;
+        document.getElementById('hud-cash').innerText = `$${Math.round(this.cash).toLocaleString()}`;
+        document.getElementById('hud-debt').innerText = `$${Math.round(this.debt).toLocaleString()}`;
+        document.getElementById('hud-energy').innerText = `${this.energy}%`;
+        document.getElementById('hud-btc').innerText = `${this.btc.toFixed(2)} BTC`;
+      }
+
+      triggerInteraction() {
+        if (!this.activeZone) return;
+        const dlg = document.getElementById('dialog');
+        const title = document.getElementById('dlg-title');
+        const desc = document.getElementById('dlg-desc');
+        const actions = document.getElementById('dlg-actions');
+        actions.innerHTML = "";
+
+        if (this.activeZone.name === "Office") {
+          title.innerText = "💼 Corporate Office";
+          desc.innerText = "Work an intense shift to earn fiat salary.";
+          actions.innerHTML = `<button class="dialog-btn" onclick="world.workShift()">Work Shift (+$400, -25% Energy)</button>`;
+        } else if (this.activeZone.name === "Apartment") {
+          title.innerText = "🏠 Your Apartment";
+          desc.innerText = "Sleep and advance to the next month. Rent ($600) and interest will be deducted.";
+          actions.innerHTML = `<button class="dialog-btn" onclick="world.sleepMonth()">Sleep & End Month</button>`;
+        } else if (this.activeZone.name === "Bank") {
+          title.innerText = "🏦 City Bank";
+          desc.innerText = "Pay down high-interest credit card debt or take emergency loans.";
+          actions.innerHTML = `
+            <button class="dialog-btn" onclick="world.payDebt(300)">Pay $300 Debt Principal</button>
+            <button class="dialog-btn" onclick="world.takeLoan(1000)">Take $1,000 Emergency Loan</button>
+          `;
+        } else if (this.activeZone.name === "Market") {
+          const price = this.getBTCPrice();
+          title.innerText = "🛒 Market & Exchange";
+          desc.innerText = `Buy groceries or buy Bitcoin.\nCurrent BTC Price: $${price.toLocaleString()}`;
+          actions.innerHTML = `
+            <button class="dialog-btn" onclick="world.buyFood()">Buy Groceries (-$50, +35% Energy)</button>
+            ${this.year >= 2009 ? `<button class="dialog-btn" onclick="world.buyBTC(100)">Buy $100 worth of BTC</button>` : `<p style="color:#94a3b8;">Bitcoin has not launched yet (Jan 2009).</p>`}
+          `;
+        }
+        dlg.style.display = "block";
+      }
+
+      workShift() {
+        if (this.energy < 25) { alert("Too exhausted! Go buy food or sleep."); return; }
+        this.cash += 400; this.energy -= 25;
+        this.updateHUD();
+        document.getElementById('dialog').style.display = 'none';
+      }
+
+      buyFood() {
+        if (this.cash < 50) { alert("Not enough cash for food!"); return; }
+        this.cash -= 50; this.energy = Math.min(100, this.energy + 35);
+        this.updateHUD();
+        document.getElementById('dialog').style.display = 'none';
+      }
+
+      payDebt(amt) {
+        if (this.cash < amt) { alert("Not enough cash!"); return; }
+        this.cash -= amt; this.debt = Math.max(0, this.debt - amt);
+        this.updateHUD();
+        document.getElementById('dialog').style.display = 'none';
+      }
+
+      takeLoan(amt) {
+        this.cash += amt; this.debt += amt;
+        this.updateHUD();
+        document.getElementById('dialog').style.display = 'none';
+      }
+
+      buyBTC(amt) {
+        const p = this.getBTCPrice();
+        if (this.cash < amt) { alert("Not enough cash!"); return; }
+        if (p <= 0) { alert("BTC not yet traded."); return; }
+        this.cash -= amt; this.btc += (amt / p);
+        this.updateHUD();
+        document.getElementById('dialog').style.display = 'none';
+      }
+
+      sleepMonth() {
+        this.month++;
+        if (this.month >= 12) { this.month = 0; this.year++; }
+        if (this.debt > 0) this.debt += Math.round(this.debt * 0.03);
+        this.cash -= 600;
+        if (this.cash < 0) { this.debt += Math.abs(this.cash); this.cash = 0; }
+        this.energy = 100;
+        this.updateHUD();
+        document.getElementById('dialog').style.display = 'none';
+      }
     }
-    scene.add(billGroup);
 
-    // Animation Loop
-    let clock = new THREE.Clock();
+    window.world = new GameWorld();
+
+    // --- 6. Main Game Loop with Physics & Third-Person Camera ---
+    const speed = 0.18;
+    const promptEl = document.getElementById('interact-prompt');
+
     function animate() {
       requestAnimationFrame(animate);
-      const t = clock.getElapsedTime();
-      torso.position.y = 1.5 + Math.sin(t * 2) * 0.02;
-      head.position.y = 2.2 + Math.sin(t * 2) * 0.02;
-      monitorLight.intensity = 3.0 + Math.sin(t * 6) * 0.4;
+
+      // Player Movement
+      if (move.forward) player.position.z -= speed;
+      if (move.backward) player.position.z += speed;
+      if (move.left) player.position.x -= speed;
+      if (move.right) player.position.x += speed;
+
+      // Restrict player inside city borders
+      player.position.x = Math.max(-25, Math.min(25, player.position.x));
+      player.position.z = Math.max(-25, Math.min(25, player.position.z));
+
+      // Third-person Camera Following Character
+      camera.position.x = player.position.x;
+      camera.position.y = player.position.y + 7;
+      camera.position.z = player.position.z + 10;
+      camera.lookAt(player.position.x, player.position.y + 1, player.position.z);
+
+      // Proximity Trigger for Interactive Buildings
+      let nearZone = null;
+      zones.forEach(z => {
+        const dist = Math.hypot(player.position.x - z.x, player.position.z - z.z);
+        if (dist < 4.5) nearZone = z;
+      });
+
+      world.activeZone = nearZone;
+      if (nearZone) {
+        promptEl.style.display = "block";
+        promptEl.innerText = `ENTER ${nearZone.name.toUpperCase()}`;
+      } else {
+        promptEl.style.display = "none";
+      }
+
       renderer.render(scene, camera);
     }
     animate();
@@ -370,338 +369,6 @@
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
-
-    // --- Complete Macro Engine ---
-    class BankruptGame {
-      constructor() {
-        this.months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-        this.restart();
-      }
-
-      restart() {
-        this.year = 2008;
-        this.monthIndex = 0;
-        this.cash = 1200;
-        this.debt = 2500;
-        this.energy = 100;
-        this.rent = 600;
-        this.livingCost = 250;
-        this.salary = 420;
-        this.debtInterest = 0.03;
-        this.btcHoldings = 0;
-        this.btcPrice = 0.00;
-        this.isGameOver = false;
-
-        document.getElementById('ending-modal').style.display = 'none';
-        document.getElementById('event-modal').style.display = 'none';
-        document.getElementById('trade-modal').style.display = 'none';
-
-        this.initTimeline();
-        this.updateHUD();
-      }
-
-      initTimeline() {
-        this.timelineEvents = [
-          {
-            year: 2008, month: "Sep",
-            title: "Lehman Brothers Collapses (Sep 2008)",
-            desc: "Global financial crisis erupts. Credit markets freeze worldwide. Your landlord raises rent by $150 to service his adjustable-rate loans.",
-            choices: [
-              { text: "Accept rent hike and work extra (+Rent, -Energy)", action: () => { this.rent += 150; this.energy -= 25; } },
-              { text: "Cut food and living budget strictly (-Living Cost)", action: () => { this.livingCost -= 60; this.energy -= 15; } }
-            ]
-          },
-          {
-            year: 2009, month: "Jan",
-            title: "The Times 03/Jan/2009 Bailout",
-            desc: "Headline: 'Chancellor on brink of second bailout for banks.' An anonymous cypherpunk publishes Bitcoin. You can mine it on your home PC for pennies.",
-            choices: [
-              { text: "Ignore it: 'Just nerdy internet play-money.'", action: () => {} },
-              { text: "Run node & CPU miner (-$50 Electricity, +100 BTC)", action: () => { this.cash -= 50; this.btcHoldings += 100; } }
-            ]
-          },
-          {
-            year: 2010, month: "May",
-            title: "10,000 BTC for Two Pizzas (May 2010)",
-            desc: "A programmer trades 10,000 Bitcoins for two pizzas. Bitcoin establishes open market pricing at ~$0.004.",
-            choices: [
-              { text: "Laugh off the pizza story and keep working", action: () => {} },
-              { text: "Buy $40 worth of BTC (~10,000 BTC)", action: () => { if(this.cash >= 40) { this.cash -= 40; this.btcHoldings += 10000; } } }
-            ]
-          },
-          {
-            year: 2011, month: "Jun",
-            title: "The First Parabolic Spike ($30 BTC)",
-            desc: "Bitcoin surges to $30. Media calls it a bubble. General inflation makes groceries more expensive.",
-            choices: [
-              { text: "Focus entirely on paying down credit cards", action: () => { this.payDebt(); } },
-              { text: "Research Bitcoin whitepaper and secure self-custody", action: () => { this.energy -= 10; } }
-            ]
-          },
-          {
-            year: 2013, month: "Mar",
-            title: "Cyprus Banking Haircut (Mar 2013)",
-            desc: "Cyprus banks seize depositor savings to bail out institutions. Bitcoin surges to $1,000.",
-            choices: [
-              { text: "Keep all emergency savings in traditional bank account", action: () => {} },
-              { text: "Buy $200 worth of Bitcoin as an alternative ledger", action: () => { this.buyBTC(200); } }
-            ]
-          },
-          {
-            year: 2017, month: "Dec",
-            title: "Retail Euphoria ($20,000 BTC)",
-            desc: "Bitcoin crosses $19,000. Everyone asks if they should take loans to speculate.",
-            choices: [
-              { text: "Borrow $2,000 on credit to buy BTC (High Risk)", action: () => { this.debt += 2000; this.buyBTC(2000); } },
-              { text: "Sell some BTC to wipe out lingering personal debt", action: () => { this.sellBTC(0.5); } },
-              { text: "HODL and manage daily fiat budget normally", action: () => {} }
-            ]
-          },
-          {
-            year: 2018, month: "Nov",
-            title: "Crypto Winter (-80% Crash)",
-            desc: "Bitcoin plummets toward $3,200. Pundits declare Bitcoin dead. Living costs remain elevated.",
-            choices: [
-              { text: "Panic and sell entire BTC balance at bottom", action: () => { this.sellBTC(1.0); } },
-              { text: "Tune out noise and keep surviving the fiat grind", action: () => {} }
-            ]
-          },
-          {
-            year: 2020, month: "Mar",
-            title: "Global Lockdowns & Massive Fiat Printing",
-            desc: "Trillions printed in stimulus. Supply chains disrupt and real inflation hits hard (+25% Living Cost).",
-            choices: [
-              { text: "Absorb inflation shock to your monthly budget", action: () => { this.livingCost += 120; } },
-              { text: "Allocate surplus fiat cash into hard money", action: () => { this.buyBTC(300); } }
-            ]
-          },
-          {
-            year: 2021, month: "Nov",
-            title: "The Sound Money Thesis ($69,000 BTC)",
-            desc: "Institutions and nation-states hold Bitcoin on their balance sheets.",
-            choices: [
-              { text: "Evaluate your lifetime financial standing", action: () => { this.evaluateGameEnding(); } }
-            ]
-          }
-        ];
-
-        this.microEvents = [
-          { title: "Car Breakdown", desc: "Your vehicle radiator burst. Pay $280 for emergency repairs or take the bus (-15% Energy).", choices: [{ text: "Pay $280", act: () => this.cash -= 280 }, { text: "Take the bus (-Energy)", act: () => this.energy -= 15 }] },
-          { title: "Dental Emergency", desc: "A severe tooth infection requires urgent treatment ($220).", choices: [{ text: "Pay dentist (-$220)", act: () => this.cash -= 220 }] },
-          { title: "Freelance Side Gig", desc: "A client offers a weekend freelance gig.", choices: [{ text: "Work the weekend (+$300, -20% Energy)", act: () => { this.cash += 300; this.energy -= 20; } }, { text: "Pass to rest", act: () => {} }] },
-          { title: "Utility Price Hike", desc: "Electricity and heating rates increase by 10%.", choices: [{ text: "Adjust budget", act: () => this.livingCost += 25 }] }
-        ];
-      }
-
-      getBTCPrice() {
-        if (this.year < 2010) return 0.00;
-        if (this.year === 2010) return 0.004;
-        if (this.year === 2011) return 15;
-        if (this.year === 2012) return 10;
-        if (this.year === 2013) return 800;
-        if (this.year === 2014) return 350;
-        if (this.year === 2015) return 250;
-        if (this.year === 2016) return 600;
-        if (this.year === 2017) return 15000;
-        if (this.year === 2018) return 3800;
-        if (this.year === 2019) return 7500;
-        if (this.year === 2020) return 18000;
-        if (this.year >= 2021) return 55000;
-        return 0;
-      }
-
-      updateHUD() {
-        this.btcPrice = this.getBTCPrice();
-        document.getElementById('date-val').innerText = `${this.months[this.monthIndex]} ${this.year}`;
-        document.getElementById('cash-val').innerText = `$${Math.round(this.cash).toLocaleString()}`;
-        document.getElementById('debt-val').innerText = `$${Math.round(this.debt).toLocaleString()}`;
-        document.getElementById('btc-val').innerText = `${this.btcHoldings.toFixed(2)} BTC`;
-        document.getElementById('btc-price').innerText = this.btcPrice > 0 ? `$${this.btcPrice.toLocaleString()}` : '$0.00';
-        document.getElementById('energy-val').innerText = `${Math.max(0, this.energy)}%`;
-
-        const totalNetWorth = (this.cash + (this.btcHoldings * this.btcPrice)) - this.debt;
-        const statusEl = document.getElementById('status-val');
-        statusEl.className = "status-badge ";
-
-        if (this.debt > 6000 && this.cash <= 0 && (this.btcHoldings * this.btcPrice) < 500) {
-          statusEl.innerText = "BANKRUPTT";
-          statusEl.classList.add("status-bankrupt");
-          billGroup.visible = true;
-          this.triggerGameOver("BANKRUPTT: You were crushed under the compounding weight of debt and fiat inflation.");
-        } else if (totalNetWorth > 50000) {
-          statusEl.innerText = "SOVEREIGN";
-          statusEl.classList.add("status-stable");
-          billGroup.visible = false;
-        } else if (this.cash < 200 || this.debt > 3000) {
-          statusEl.innerText = "BROKE";
-          statusEl.classList.add("status-broke");
-          billGroup.visible = true;
-        } else if (this.debt > 1500) {
-          statusEl.innerText = "IN DEBT";
-          statusEl.classList.add("status-debt");
-          billGroup.visible = true;
-        } else if (this.cash < 1000) {
-          statusEl.innerText = "STRUGGLING";
-          statusEl.classList.add("status-struggling");
-          billGroup.visible = false;
-        } else {
-          statusEl.innerText = "STABLE";
-          statusEl.classList.add("status-stable");
-          billGroup.visible = false;
-        }
-      }
-
-      work() {
-        if (this.isGameOver) return;
-        if (this.energy <= 10) {
-          alert("Burnout collapse! You worked while exhausted. Emergency clinic bill: $200.");
-          this.cash -= 200;
-          this.energy = 30;
-          this.updateHUD();
-          return;
-        }
-        this.cash += this.salary;
-        this.energy -= 25;
-        this.updateHUD();
-      }
-
-      rest() {
-        if (this.isGameOver) return;
-        if (this.cash < 50) { alert("Not enough money for groceries."); return; }
-        this.cash -= 50;
-        this.energy = Math.min(100, this.energy + 30);
-        this.updateHUD();
-      }
-
-      payDebt() {
-        if (this.isGameOver) return;
-        if (this.cash < 300) { alert("Need at least $300 cash."); return; }
-        this.cash -= 300;
-        this.debt = Math.max(0, this.debt - 300);
-        this.updateHUD();
-      }
-
-      openTradeModal() {
-        if (this.isGameOver) return;
-        if (this.year < 2009) { alert("Bitcoin has not launched yet (Genesis is Jan 2009)."); return; }
-        document.getElementById('trade-body').innerText = `BTC Price: $${this.btcPrice.toLocaleString()} | Your Holdings: ${this.btcHoldings.toFixed(4)} BTC ($${Math.round(this.btcHoldings * this.btcPrice).toLocaleString()})`;
-        document.getElementById('trade-modal').style.display = 'block';
-      }
-
-      buyBTC(usdAmount) {
-        if (this.cash < usdAmount) { alert("Not enough fiat cash."); return; }
-        if (this.btcPrice <= 0) { alert("Bitcoin is not yet traded on open markets."); return; }
-        this.cash -= usdAmount;
-        this.btcHoldings += (usdAmount / this.btcPrice);
-        document.getElementById('trade-modal').style.display = 'none';
-        this.updateHUD();
-      }
-
-      sellBTC(percentage) {
-        if (this.btcHoldings <= 0) { alert("No Bitcoin to sell."); return; }
-        const sellAmount = this.btcHoldings * percentage;
-        const fiatGained = sellAmount * this.btcPrice;
-        this.btcHoldings -= sellAmount;
-        this.cash += fiatGained;
-        document.getElementById('trade-modal').style.display = 'none';
-        this.updateHUD();
-      }
-
-      endMonth() {
-        if (this.isGameOver) return;
-
-        if (this.debt > 0) this.debt += Math.round(this.debt * this.debtInterest);
-        this.cash -= (this.rent + this.livingCost);
-
-        if (this.cash < 0) {
-          this.debt += Math.abs(this.cash);
-          this.cash = 0;
-        }
-
-        this.monthIndex++;
-        if (this.monthIndex >= 12) {
-          this.monthIndex = 0;
-          this.year++;
-          this.rent += Math.round(this.rent * 0.04);
-          this.livingCost += Math.round(this.livingCost * 0.05);
-          this.salary += Math.round(this.salary * 0.02);
-        }
-
-        this.energy = Math.min(100, this.energy + 10);
-        this.updateHUD();
-        this.checkEvents();
-      }
-
-      checkEvents() {
-        const currentMonthName = this.months[this.monthIndex];
-        const macro = this.timelineEvents.find(e => e.year === this.year && e.month === currentMonthName);
-        
-        if (macro) {
-          this.showModal(macro.title, macro.desc, macro.choices);
-        } else if (Math.random() < 0.20) {
-          const randomEv = this.microEvents[Math.floor(Math.random() * this.microEvents.length)];
-          const formattedChoices = randomEv.choices.map(c => ({ text: c.text, action: c.act }));
-          this.showModal(randomEv.title, randomEv.desc, formattedChoices);
-        }
-      }
-
-      showModal(title, desc, choices) {
-        const modal = document.getElementById('event-modal');
-        document.getElementById('modal-title').innerText = title;
-        document.getElementById('modal-desc').innerText = desc;
-        const choicesContainer = document.getElementById('modal-choices');
-        choicesContainer.innerHTML = "";
-
-        choices.forEach(choice => {
-          const btn = document.createElement('button');
-          btn.innerText = choice.text;
-          btn.onclick = () => {
-            choice.action();
-            modal.style.display = "none";
-            this.updateHUD();
-          };
-          choicesContainer.appendChild(btn);
-        });
-
-        modal.style.display = "block";
-      }
-
-      triggerGameOver(reason) {
-        this.isGameOver = true;
-        document.getElementById('ending-title').innerText = "💀 GAME OVER: BANKRUPTT";
-        document.getElementById('ending-desc').innerText = reason;
-        document.getElementById('ending-stats').innerHTML = `
-          Year Reached: ${this.year}<br>
-          Final Cash: $${Math.round(this.cash)}<br>
-          Final Debt: $${Math.round(this.debt)}<br>
-          BTC Stack: ${this.btcHoldings.toFixed(2)} BTC
-        `;
-        document.getElementById('ending-modal').style.display = 'block';
-      }
-
-      evaluateGameEnding() {
-        this.isGameOver = true;
-        const btcValue = this.btcHoldings * this.btcPrice;
-        const netWorth = Math.round((this.cash + btcValue) - this.debt);
-
-        if (netWorth > 100000) {
-          document.getElementById('ending-title').innerText = "👑 VICTORY: FINANCIAL SOVEREIGNTY";
-          document.getElementById('ending-desc').innerText = "You survived over a decade of currency debasement, bank bailouts, and debt traps. By recognizing sound money early and holding through brutal volatility, you decoupled your financial life from broken fiat rules.";
-        } else {
-          document.getElementById('ending-title').innerText = "🏃 THE RAT RACE ENDING";
-          document.getElementById('ending-desc').innerText = "You survived until 2021, but remained entirely within the traditional fiat system. As inflation accelerated and living costs multiplied, you worked harder every single year just to stay in the exact same place.";
-        }
-
-        document.getElementById('ending-stats').innerHTML = `
-          Total Net Worth: $${netWorth.toLocaleString()}<br>
-          Remaining Debt: $${Math.round(this.debt).toLocaleString()}<br>
-          Bitcoin Stack: ${this.btcHoldings.toFixed(4)} BTC ($${Math.round(btcValue).toLocaleString()})
-        `;
-        document.getElementById('ending-modal').style.display = 'block';
-      }
-    }
-
-    window.game = new BankruptGame();
   </script>
 </body>
 </html>
