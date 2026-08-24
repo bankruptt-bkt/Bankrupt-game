@@ -20,7 +20,7 @@
       flex-wrap: wrap;
       justify-content: space-between;
       gap: 8px;
-      background: rgba(15, 18, 30, 0.9);
+      background: rgba(15, 18, 30, 0.92);
       border: 1px solid rgba(255, 255, 255, 0.12);
       backdrop-filter: blur(12px);
       padding: 10px 14px;
@@ -55,7 +55,7 @@
       grid-template-columns: repeat(5, 1fr);
       gap: 6px;
       width: 95%;
-      max-width: 540px;
+      max-width: 560px;
       background: rgba(15, 18, 30, 0.94);
       border: 1px solid rgba(255, 255, 255, 0.15);
       padding: 8px;
@@ -80,8 +80,8 @@
     button.game-btn:active { background: #3b82f6; transform: scale(0.96); }
     button.game-btn small { font-size: 8px; color: #9ca3af; text-align: center; }
 
-    /* Event Modal */
-    #event-modal, #trade-modal {
+    /* Modals & Dialogs */
+    .modal-overlay {
       position: absolute;
       top: 50%;
       left: 50%;
@@ -91,13 +91,13 @@
       background: #151928;
       border: 1px solid #3b82f6;
       border-radius: 16px;
-      padding: 20px;
+      padding: 22px;
       box-shadow: 0 20px 50px rgba(0,0,0,0.95);
       z-index: 20;
       display: none;
     }
-    .modal-header { font-size: 16px; color: #60a5fa; margin-bottom: 8px; font-weight: 700; }
-    .modal-body { font-size: 13px; line-height: 1.45; color: #d1d5db; margin-bottom: 16px; }
+    .modal-header { font-size: 17px; color: #60a5fa; margin-bottom: 8px; font-weight: 700; }
+    .modal-body { font-size: 13px; line-height: 1.5; color: #d1d5db; margin-bottom: 16px; }
     .modal-choices { display: flex; flex-direction: column; gap: 8px; }
     .modal-choices button {
       background: #20273d;
@@ -111,16 +111,18 @@
       line-height: 1.35;
     }
     .modal-choices button:hover { background: #3b82f6; }
-    .close-btn {
-      background: #374151;
+    .btn-action {
+      background: #2563eb;
       color: #fff;
       border: none;
-      padding: 8px;
-      border-radius: 6px;
-      margin-top: 10px;
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: bold;
       width: 100%;
       cursor: pointer;
+      margin-top: 8px;
     }
+    .btn-action:hover { background: #1d4ed8; }
   </style>
 </head>
 <body>
@@ -158,11 +160,11 @@
   <div id="action-bar">
     <button class="game-btn" onclick="game.work()">
       💼 Work
-      <small>+$400, -25%</small>
+      <small>+$420, -25%</small>
     </button>
     <button class="game-btn" onclick="game.rest()">
       ☕ Rest
-      <small>-$40, +30%</small>
+      <small>-$50, +30%</small>
     </button>
     <button class="game-btn" onclick="game.payDebt()">
       💳 Pay Debt
@@ -174,27 +176,36 @@
     </button>
     <button class="game-btn" onclick="game.endMonth()">
       🗓️ End Month
-      <small>Pay Bills</small>
+      <small>Pay Rent/Bills</small>
     </button>
   </div>
 
-  <!-- Macro Event Modal -->
-  <div id="event-modal">
+  <!-- Event Dialog -->
+  <div id="event-modal" class="modal-overlay">
     <div id="modal-title" class="modal-header">Macro Event</div>
     <div id="modal-desc" class="modal-body">Event details...</div>
     <div id="modal-choices" class="modal-choices"></div>
   </div>
 
-  <!-- Trade Modal -->
-  <div id="trade-modal">
+  <!-- Trade Dialog -->
+  <div id="trade-modal" class="modal-overlay">
     <div class="modal-header">₿ Bitcoin Ledger</div>
     <div id="trade-body" class="modal-body">Current BTC Price: $0.00</div>
     <div class="modal-choices">
-      <button onclick="game.buyBTC(100)">Buy $100 worth of BTC</button>
-      <button onclick="game.sellBTC(0.5)">Sell 50% of your BTC Holdings</button>
-      <button onclick="game.sellBTC(1.0)">Sell 100% of your BTC Holdings</button>
+      <button onclick="game.buyBTC(100)">Buy $100 of BTC</button>
+      <button onclick="game.buyBTC(500)">Buy $500 of BTC</button>
+      <button onclick="game.sellBTC(0.5)">Sell 50% of Holdings</button>
+      <button onclick="game.sellBTC(1.0)">Sell 100% of Holdings</button>
     </div>
-    <button class="close-btn" onclick="document.getElementById('trade-modal').style.display='none'">Close</button>
+    <button class="btn-action" style="background: #374151;" onclick="document.getElementById('trade-modal').style.display='none'">Close</button>
+  </div>
+
+  <!-- Game Over / Victory Summary Screen -->
+  <div id="ending-modal" class="modal-overlay">
+    <div id="ending-title" class="modal-header" style="font-size: 20px;">Game Over</div>
+    <div id="ending-desc" class="modal-body" style="font-size: 14px;">Summary...</div>
+    <div id="ending-stats" class="modal-body" style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; font-family: monospace;"></div>
+    <button class="btn-action" onclick="game.restart()">🔄 Start New Journey</button>
   </div>
 
   <script type="importmap">
@@ -208,7 +219,7 @@
   <script type="module">
     import * as THREE from 'three';
 
-    // --- 3D Scene Setup ---
+    // 3D Scene Initialization
     const container = document.getElementById('canvas-container');
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x0a0c13);
@@ -224,7 +235,6 @@
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     container.appendChild(renderer.domElement);
 
-    // Lights
     scene.add(new THREE.AmbientLight(0x28324e, 1.2));
     const ceilingLight = new THREE.PointLight(0xffecd1, 1.8, 14);
     ceilingLight.position.set(0, 6, 0);
@@ -235,7 +245,6 @@
     monitorLight.position.set(-2, 2.4, -2.4);
     scene.add(monitorLight);
 
-    // Geometry
     const floor = new THREE.Mesh(new THREE.BoxGeometry(9, 0.4, 9), new THREE.MeshStandardMaterial({ color: 0x221a15 }));
     floor.position.y = -0.2;
     floor.receiveShadow = true;
@@ -250,7 +259,6 @@
     backWall2.position.set(0, 2.8, -4.5);
     scene.add(backWall2);
 
-    // Desk & Monitor
     const desk = new THREE.Mesh(new THREE.BoxGeometry(3.2, 1.4, 1.6), new THREE.MeshStandardMaterial({ color: 0x3e2723 }));
     desk.position.set(-2.4, 0.7, -2.8);
     scene.add(desk);
@@ -259,7 +267,6 @@
     screen.position.set(-2.4, 1.9, -3.04);
     scene.add(screen);
 
-    // Character
     const characterGroup = new THREE.Group();
     const torso = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.9, 0.5), new THREE.MeshStandardMaterial({ color: 0x3b82f6 }));
     torso.position.set(0, 1.5, 0);
@@ -272,7 +279,6 @@
     characterGroup.position.set(-2.4, 0, -1.6);
     scene.add(characterGroup);
 
-    // Debt Paper Clutter
     const billGroup = new THREE.Group();
     const paperMat = new THREE.MeshStandardMaterial({ color: 0xfef08a });
     for (let i = 0; i < 6; i++) {
@@ -301,30 +307,43 @@
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    // --- Complete Macro Timeline & Game Engine ---
+    // Complete Game State Engine
     class BankruptGame {
       constructor() {
+        this.months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        this.restart();
+      }
+
+      restart() {
         this.year = 2008;
         this.monthIndex = 0;
-        this.months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-        
         this.cash = 1200;
         this.debt = 2500;
         this.energy = 100;
         this.rent = 600;
         this.livingCost = 250;
+        this.salary = 420;
         this.debtInterest = 0.03;
         this.btcHoldings = 0;
         this.btcPrice = 0.00;
+        this.isGameOver = false;
 
-        // Full Historical Timeline Deck (2008 - 2021)
+        document.getElementById('ending-modal').style.display = 'none';
+        document.getElementById('event-modal').style.display = 'none';
+        document.getElementById('trade-modal').style.display = 'none';
+
+        this.initTimeline();
+        this.updateHUD();
+      }
+
+      initTimeline() {
         this.timelineEvents = [
           {
             year: 2008, month: "Sep",
             title: "Lehman Brothers Collapses (Sep 2008)",
-            desc: "Global financial crisis erupts. Credit markets freeze worldwide. Your landlord raises rent by $150 to service his own adjustable-rate loans.",
+            desc: "Global financial crisis erupts. Credit markets freeze worldwide. Your landlord raises rent to service his adjustable-rate loans.",
             choices: [
-              { text: "Accept rent hike and work extra hours (+Rent, -Energy)", action: () => { this.rent += 150; this.energy -= 25; } },
+              { text: "Accept rent hike and work extra (+Rent, -Energy)", action: () => { this.rent += 150; this.energy -= 25; } },
               { text: "Cut food and living budget strictly (-Living Cost)", action: () => { this.livingCost -= 60; this.energy -= 15; } }
             ]
           },
@@ -340,7 +359,7 @@
           {
             year: 2010, month: "May",
             title: "10,000 BTC for Two Pizzas (May 2010)",
-            desc: "A programmer trades 10,000 Bitcoins for two pizzas. Bitcoin officially establishes market pricing at ~$0.004 each.",
+            desc: "A programmer trades 10,000 Bitcoins for two pizzas. Bitcoin establishes open market pricing at ~$0.004.",
             choices: [
               { text: "Laugh off the pizza story and keep working", action: () => {} },
               { text: "Buy $40 worth of BTC (~10,000 BTC)", action: () => { if(this.cash >= 40) { this.cash -= 40; this.btcHoldings += 10000; } } }
@@ -349,7 +368,7 @@
           {
             year: 2011, month: "Jun",
             title: "The First Parabolic Spike ($30 BTC)",
-            desc: "Bitcoin surges to $30. Media calls it a bubble. Inflation makes your groceries 20% more expensive.",
+            desc: "Bitcoin surges to $30. Media calls it a bubble. General inflation makes groceries more expensive.",
             choices: [
               { text: "Focus entirely on paying down credit cards", action: () => { this.payDebt(); } },
               { text: "Research Bitcoin whitepaper and secure self-custody", action: () => { this.energy -= 10; } }
@@ -358,51 +377,56 @@
           {
             year: 2013, month: "Mar",
             title: "Cyprus Banking Haircut (Mar 2013)",
-            desc: "Cyprus banks seize depositor savings to bail out institutions. Bitcoin hits $1,000 as people seek censorship-resistant money.",
+            desc: "Cyprus banks seize depositor savings to bail out institutions. Bitcoin surges to $1,000.",
             choices: [
               { text: "Keep all emergency savings in traditional bank account", action: () => {} },
-              { text: "Keep a portion of savings in Bitcoin", action: () => { this.buyBTC(200); } }
+              { text: "Buy $200 worth of Bitcoin as an alternative ledger", action: () => { this.buyBTC(200); } }
             ]
           },
           {
             year: 2017, month: "Dec",
             title: "Retail Euphoria ($20,000 BTC)",
-            desc: "Bitcoin crosses $19,000. Mainstream news is non-stop crypto. Everyone asks if they should take loans to buy.",
+            desc: "Bitcoin crosses $19,000. Everyone asks if they should take loans to speculate.",
             choices: [
-              { text: "Take an emergency loan to buy crypto (Extremely Dangerous)", action: () => { this.debt += 2000; this.buyBTC(2000); } },
-              { text: "Take profit / sell some BTC to wipe out personal debt", action: () => { this.sellBTC(0.5); } },
-              { text: "Hold your keys patiently", action: () => {} }
+              { text: "Borrow $2,000 on credit to buy BTC (High Risk)", action: () => { this.debt += 2000; this.buyBTC(2000); } },
+              { text: "Sell some BTC to wipe out lingering personal debt", action: () => { this.sellBTC(0.5); } },
+              { text: "HODL and manage daily fiat budget normally", action: () => {} }
             ]
           },
           {
             year: 2018, month: "Nov",
             title: "Crypto Winter (-80% Crash)",
-            desc: "Bitcoin plummets toward $3,200. Pundits declare Bitcoin dead for the 300th time. Living costs remain high.",
+            desc: "Bitcoin plummets toward $3,200. Pundits declare Bitcoin dead. Living costs remain elevated.",
             choices: [
-              { text: "Panic and sell everything at the bottom", action: () => { this.sellBTC(1.0); } },
-              { text: "Tune out noise and keep managing your daily fiat budget", action: () => {} }
+              { text: "Panic and sell entire BTC balance at bottom", action: () => { this.sellBTC(1.0); } },
+              { text: "Tune out noise and keep surviving the fiat grind", action: () => {} }
             ]
           },
           {
             year: 2020, month: "Mar",
-            title: "Global Lockdowns & Infinite Money Printing",
-            desc: "Trillions of fiat dollars printed overnight in stimulus. Real inflation hits food, housing, and energy hard.",
+            title: "Global Lockdowns & Massive Fiat Printing",
+            desc: "Trillions printed in stimulus. Supply chains disrupt and real inflation hits hard (+25% Living Cost).",
             choices: [
-              { text: "Watch fiat purchasing power erode as bills spike (+30% Expenses)", action: () => { this.livingCost += 120; } },
-              { text: "Allocate surplus fiat cash into hard assets", action: () => { this.buyBTC(300); } }
+              { text: "Absorb inflation shock to your monthly budget", action: () => { this.livingCost += 120; } },
+              { text: "Allocate surplus fiat cash into hard money", action: () => { this.buyBTC(300); } }
             ]
           },
           {
             year: 2021, month: "Nov",
-            title: "The Sound Money Thesis ($69,000)",
-            desc: "Institutions, public companies, and nations adopt Bitcoin. You look back across the entire journey from 2008 to today.",
+            title: "The Sound Money Thesis ($69,000 BTC)",
+            desc: "Institutions and nation-states hold Bitcoin on their balance sheets.",
             choices: [
-              { text: "Evaluate your lifetime financial standing", action: () => { this.finishGame(); } }
+              { text: "Evaluate your lifetime financial standing", action: () => { this.evaluateGameEnding(); } }
             ]
           }
         ];
 
-        this.updateHUD();
+        this.microEvents = [
+          { title: "Car Breakdown", desc: "Your vehicle radiator burst. Pay $280 for emergency repairs or take the bus (-15% Energy).", choices: [{ text: "Pay $280", act: () => this.cash -= 280 }, { text: "Take the bus (-Energy)", act: () => this.energy -= 15 }] },
+          { title: "Dental Emergency", desc: "A severe tooth infection requires urgent treatment ($220).", choices: [{ text: "Pay dentist (-$220)", act: () => this.cash -= 220 }] },
+          { title: "Freelance Side Gig", desc: "A client offers a weekend freelance gig.", choices: [{ text: "Work the weekend (+$300, -20% Energy)", act: () => { this.cash += 300; this.energy -= 20; } }, { text: "Pass to rest", act: () => {} }] },
+          { title: "Utility Price Hike", desc: "Electricity and heating rates increase by 10%.", choices: [{ text: "Adjust budget", act: () => this.livingCost += 25 }] }
+        ];
       }
 
       getBTCPrice() {
@@ -435,10 +459,11 @@
         const statusEl = document.getElementById('status-val');
         statusEl.className = "status-badge ";
 
-        if (this.cash <= 0 && this.debt > 4500 && (this.btcHoldings * this.btcPrice) < 500) {
+        if (this.debt > 6000 && this.cash <= 0 && (this.btcHoldings * this.btcPrice) < 500) {
           statusEl.innerText = "BANKRUPTT";
           statusEl.classList.add("status-bankrupt");
           billGroup.visible = true;
+          this.triggerGameOver("BANKRUPTT: You were crushed under the compounding weight of debt and fiat inflation.");
         } else if (totalNetWorth > 50000) {
           statusEl.innerText = "SOVEREIGN";
           statusEl.classList.add("status-stable");
@@ -463,20 +488,29 @@
       }
 
       work() {
-        if (this.energy < 20) { alert("Too exhausted. Eat & Rest."); return; }
-        this.cash += 400;
+        if (this.isGameOver) return;
+        if (this.energy <= 10) {
+          alert("Burnout collapse! You worked while completely exhausted. An emergency clinic visit cost you $200.");
+          this.cash -= 200;
+          this.energy = 30;
+          this.updateHUD();
+          return;
+        }
+        this.cash += this.salary;
         this.energy -= 25;
         this.updateHUD();
       }
 
       rest() {
-        if (this.cash < 40) { alert("Not enough money for food."); return; }
-        this.cash -= 40;
+        if (this.isGameOver) return;
+        if (this.cash < 50) { alert("Not enough money for groceries."); return; }
+        this.cash -= 50;
         this.energy = Math.min(100, this.energy + 30);
         this.updateHUD();
       }
 
       payDebt() {
+        if (this.isGameOver) return;
         if (this.cash < 300) { alert("Need at least $300 cash."); return; }
         this.cash -= 300;
         this.debt = Math.max(0, this.debt - 300);
@@ -484,11 +518,9 @@
       }
 
       openTradeModal() {
-        if (this.year < 2009) {
-          alert("Bitcoin has not been launched yet.");
-          return;
-        }
-        document.getElementById('trade-body').innerText = `Current BTC Price: $${this.btcPrice.toLocaleString()} | Your Holdings: ${this.btcHoldings.toFixed(4)} BTC ($${Math.round(this.btcHoldings * this.btcPrice).toLocaleString()})`;
+        if (this.isGameOver) return;
+        if (this.year < 2009) { alert("Bitcoin has not launched yet."); return; }
+        document.getElementById('trade-body').innerText = `BTC Price: $${this.btcPrice.toLocaleString()} | Your Holdings: ${this.btcHoldings.toFixed(4)} BTC ($${Math.round(this.btcHoldings * this.btcPrice).toLocaleString()})`;
         document.getElementById('trade-modal').style.display = 'block';
       }
 
@@ -512,39 +544,59 @@
       }
 
       endMonth() {
+        if (this.isGameOver) return;
+
+        // Debt compound interest
         if (this.debt > 0) this.debt += Math.round(this.debt * this.debtInterest);
+
+        // Deduct monthly rent & living expenses
         this.cash -= (this.rent + this.livingCost);
 
+        // Emergency credit if out of cash
         if (this.cash < 0) {
           this.debt += Math.abs(this.cash);
           this.cash = 0;
         }
 
+        // Advance calendar
         this.monthIndex++;
         if (this.monthIndex >= 12) {
           this.monthIndex = 0;
           this.year++;
+          // Dynamic Yearly Inflation
+          this.rent += Math.round(this.rent * 0.04);
+          this.livingCost += Math.round(this.livingCost * 0.05);
+          this.salary += Math.round(this.salary * 0.02); // Wages lag behind inflation
         }
 
         this.energy = Math.min(100, this.energy + 10);
         this.updateHUD();
-        this.checkHistoricalEvents();
+
+        // Check Macro or Random Events
+        this.checkEvents();
       }
 
-      checkHistoricalEvents() {
+      checkEvents() {
         const currentMonthName = this.months[this.monthIndex];
-        const event = this.timelineEvents.find(e => e.year === this.year && e.month === currentMonthName);
-        if (event) this.showModal(event);
+        const macro = this.timelineEvents.find(e => e.year === this.year && e.month === currentMonthName);
+        
+        if (macro) {
+          this.showModal(macro.title, macro.desc, macro.choices);
+        } else if (Math.random() < 0.22) { // 22% chance of micro-life event
+          const randomEv = this.microEvents[Math.floor(Math.random() * this.microEvents.length)];
+          const formattedChoices = randomEv.choices.map(c => ({ text: c.text, action: c.act }));
+          this.showModal(randomEv.title, randomEv.desc, formattedChoices);
+        }
       }
 
-      showModal(event) {
+      showModal(title, desc, choices) {
         const modal = document.getElementById('event-modal');
-        document.getElementById('modal-title').innerText = event.title;
-        document.getElementById('modal-desc').innerText = event.desc;
+        document.getElementById('modal-title').innerText = title;
+        document.getElementById('modal-desc').innerText = desc;
         const choicesContainer = document.getElementById('modal-choices');
         choicesContainer.innerHTML = "";
 
-        event.choices.forEach(choice => {
+        choices.forEach(choice => {
           const btn = document.createElement('button');
           btn.innerText = choice.text;
           btn.onclick = () => {
@@ -558,9 +610,38 @@
         modal.style.display = "block";
       }
 
-      finishGame() {
-        const netWorth = Math.round((this.cash + (this.btcHoldings * this.btcPrice)) - this.debt);
-        alert(`Journey Complete!\nFinal Net Worth: $${netWorth.toLocaleString()}\nTotal Debt: $${Math.round(this.debt).toLocaleString()}\nTotal BTC: ${this.btcHoldings.toFixed(2)} BTC`);
+      triggerGameOver(reason) {
+        this.isGameOver = true;
+        document.getElementById('ending-title').innerText = "💀 GAME OVER: BANKRUPTT";
+        document.getElementById('ending-desc').innerText = reason;
+        document.getElementById('ending-stats').innerHTML = `
+          Year Reached: ${this.year}<br>
+          Final Cash: $${Math.round(this.cash)}<br>
+          Final Debt: $${Math.round(this.debt)}<br>
+          BTC Stack: ${this.btcHoldings.toFixed(2)} BTC
+        `;
+        document.getElementById('ending-modal').style.display = 'block';
+      }
+
+      evaluateGameEnding() {
+        this.isGameOver = true;
+        const btcValue = this.btcHoldings * this.btcPrice;
+        const netWorth = Math.round((this.cash + btcValue) - this.debt);
+
+        if (netWorth > 100000) {
+          document.getElementById('ending-title').innerText = "👑 VICTORY: FINANCIAL SOVEREIGNTY";
+          document.getElementById('ending-desc').innerText = "You survived over a decade of currency debasement, bank bailouts, and debt traps. By recognizing sound money early and holding through brutal volatility, you decoupled your financial life from broken fiat rules.";
+        } else {
+          document.getElementById('ending-title').innerText = "🏃 THE RAT RACE ENDING";
+          document.getElementById('ending-desc').innerText = "You survived until 2021, but remained entirely within the traditional fiat system. As inflation accelerated and living costs multiplied, you worked harder every single year just to stay in the exact same place.";
+        }
+
+        document.getElementById('ending-stats').innerHTML = `
+          Total Net Worth: $${netWorth.toLocaleString()}<br>
+          Remaining Debt: $${Math.round(this.debt).toLocaleString()}<br>
+          Bitcoin Stack: ${this.btcHoldings.toFixed(4)} BTC ($${Math.round(btcValue).toLocaleString()})
+        `;
+        document.getElementById('ending-modal').style.display = 'block';
       }
     }
 
