@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BANKRUPTT</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body { background-color: #0f111a; color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; height: 100vh; }
+    
+    #canvas-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+
+    /* Top HUD / Status Bar */
+    #hud {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      right: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(20, 24, 38, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(8px);
+      padding: 12px 20px;
+      border-radius: 12px;
+      z-index: 10;
+      font-size: 14px;
+    }
+    .metric { display: flex; flex-direction: column; gap: 4px; }
+    .metric-title { font-size: 11px; color: #8a99ad; text-transform: uppercase; letter-spacing: 0.5px; }
+    .metric-value { font-size: 18px; font-weight: bold; }
+    .status-badge {
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-weight: bold;
+      text-transform: uppercase;
+      font-size: 13px;
+    }
+    .status-stable { background: #2a9d8f; color: #fff; }
+    .status-struggling { background: #e9c46a; color: #111; }
+    .status-debt { background: #f4a261; color: #111; }
+    .status-broke { background: #e76f51; color: #fff; }
+    .status-bankrupt { background: #d90429; color: #fff; }
+
+    /* Action Deck / Controls */
+    #action-bar {
+      position: absolute;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 12px;
+      background: rgba(20, 24, 38, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 12px 16px;
+      border-radius: 16px;
+      backdrop-filter: blur(10px);
+      z-index: 10;
+    }
+    button.game-btn {
+      background: #1f2937;
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 12px 18px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    button.game-btn:hover { background: #374151; border-color: #60a5fa; transform: translateY(-2px); }
+    button.game-btn small { font-size: 10px; color: #9ca3af; }
+
+    /* Modal / Event Dialog */
+    #event-modal {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 90%;
+      max-width: 450px;
+      background: #181c2b;
+      border: 1px solid #3b82f6;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+      z-index: 20;
+      display: none;
+    }
+    #event-modal h2 { margin-bottom: 8px; font-size: 18px; color: #60a5fa; }
+    #event-modal p { font-size: 14px; line-height: 1.5; color: #d1d5db; margin-bottom: 20px; }
+    .modal-choices { display: flex; flex-direction: column; gap: 10px; }
+    .modal-choices button {
+      background: #252d43;
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #fff;
+      padding: 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      text-align: left;
+      font-size: 13px;
+      line-height: 1.4;
+      transition: background 0.2s;
+    }
+    .modal-choices button:hover { background: #3b82f6; }
+  </style>
+</head>
+<body>
+
+  <!-- Top Metrics Bar -->
+  <div id="hud">
+    <div class="metric">
+      <span class="metric-title">Date</span>
+      <span id="date-val" class="metric-value">Jan 2008</span>
+    </div>
+    <div class="metric">
+      <span class="metric-title">Cash</span>
+      <span id="cash-val" class="metric-value" style="color: #4ade80;">$1,200</span>
+    </div>
+    <div class="metric">
+      <span class="metric-title">Debt</span>
+      <span id="debt-val" class="metric-value" style="color: #f87171;">$2,500</span>
+    </div>
+    <div class="metric">
+      <span class="metric-title">Energy</span>
+      <span id="energy-val" class="metric-value">100%</span>
+    </div>
+    <div class="metric">
+      <span class="metric-title">Status</span>
+      <span id="status-val" class="status-badge status-struggling">STRUGGLING</span>
+    </div>
+  </div>
+
+  <!-- 3D Canvas -->
+  <div id="canvas-container"></div>
+
+  <!-- Bottom Routine Actions -->
+  <div id="action-bar">
+    <button class="game-btn" onclick="game.work()">
+      💼 Go to Work
+      <small>+Cash, -Energy</small>
+    </button>
+    <button class="game-btn" onclick="game.rest()">
+      ☕ Rest & Eat
+      <small>-Cash, +Energy</small>
+    </button>
+    <button class="game-btn" onclick="game.payDebt()">
+      💳 Pay Debt
+      <small>-$300 Principal</small>
+    </button>
+    <button class="game-btn" onclick="game.endMonth()">
+      🗓️ End Month
+      <small>Pay Bills & Advance</small>
+    </button>
+  </div>
+
+  <!-- Story & Choice Pop-up -->
+  <div id="event-modal">
+    <h2 id="modal-title">Macro Event</h2>
+    <p id="modal-desc">Event description goes here...</p>
+    <div id="modal-choices" class="modal-choices"></div>
+  </div>
+
+  <!-- Three.js Library -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+      }
+    }
+  </script>
+
+  <script type="module">
+    import * as THREE from 'three';
+
+    // --- 1. 3D Scene Setup (Low-Poly Isometric Apartment) ---
+    const container = document.getElementById('canvas-container');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0f111a);
+
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(12, 14, 12);
+    camera.lookAt(0, 1, 0);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;
+    container.appendChild(renderer.domElement);
+
+    // Ambient & Directional Lights
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambientLight);
+
+    const dirLight = new THREE.DirectionalLight(0xffeedd, 1.2);
+    dirLight.position.set(10, 15, 8);
+    dirLight.castShadow = true;
+    scene.add(dirLight);
+
+    // Apartment Floor
+    const floorGeo = new THREE.BoxGeometry(10, 0.4, 10);
+    const floorMat = new THREE.MeshStandardMaterial({ color: 0x332822, roughness: 0.8 });
+    const floor = new THREE.Mesh(floorGeo, floorMat);
+    floor.receiveShadow = true;
+    scene.add(floor);
+
+    // Furniture: Work Desk
+    const deskGeo = new THREE.BoxGeometry(3, 1.2, 1.6);
+    const deskMat = new THREE.MeshStandardMaterial({ color: 0x5c4033 });
+    const desk = new THREE.Mesh(deskGeo, deskMat);
+    desk.position.set(-2.5, 0.8, -2.5);
+    desk.castShadow = true;
+    desk.receiveShadow = true;
+    scene.add(desk);
+
+    // Furniture: Bed
+    const bedGeo = new THREE.BoxGeometry(3.5, 0.8, 2);
+    const bedMat = new THREE.MeshStandardMaterial({ color: 0x253247 });
+    const bed = new THREE.Mesh(bedGeo, bedMat);
+    bed.position.set(2.5, 0.6, -3);
+    bed.castShadow = true;
+    scene.add(bed);
+
+    // Gentle camera breathing animation
+    let clock = new THREE.Clock();
+    function animate() {
+      requestAnimationFrame(animate);
+      const t = clock.getElapsedTime();
+      camera.position.y = 14 + Math.sin(t * 0.5) * 0.3;
+      camera.lookAt(0, 1, 0);
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // --- 2. Narrative Engine & Game State ---
+    class BankruptGame {
+      constructor() {
+        this.year = 2008;
+        this.monthIndex = 0;
+        this.months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        
+        this.cash = 1200;
+        this.debt = 2500;
+        this.energy = 100;
+        this.rent = 600;
+        this.livingCost = 250;
+        this.debtInterest = 0.03; // 3% monthly
+        this.btcHoldings = 0;
+
+        // Historical Event Queue
+        this.timelineEvents = [
+          {
+            year: 2008, month: "Sep",
+            title: "Wall Street Turmoil (September 2008)",
+            desc: "Lehman Brothers files for bankruptcy. Global credit markets freeze. Your landlord raises rent due to inflation and interest spikes.",
+            choices: [
+              { text: "Absorb the cost and work overtime", action: () => { this.rent += 150; this.energy -= 20; } },
+              { text: "Cut food and living budget strictly", action: () => { this.livingCost -= 50; this.energy -= 10; } }
+            ]
+          },
+          {
+            year: 2009, month: "Jan",
+            title: "Chancellor on Brink of Second Bailout",
+            desc: "Newspaper headline: 'The Times 03/Jan/2009 Chancellor on brink of second bailout for banks'. A tiny forum post mentions a digital peer-to-peer cash called 'Bitcoin'.",
+            choices: [
+              { text: "Ignore it: 'Sounds like internet play-money.'", action: () => {} },
+              { text: "Experiment: Run mining software on your home PC (-$50 electric)", action: () => { this.cash -= 50; this.btcHoldings += 50; } }
+            ]
+          }
+        ];
+
+        this.updateHUD();
+      }
+
+      updateHUD() {
+        document.getElementById('date-val').innerText = `${this.months[this.monthIndex]} ${this.year}`;
+        document.getElementById('cash-val').innerText = `$${Math.round(this.cash).toLocaleString()}`;
+        document.getElementById('debt-val').innerText = `$${Math.round(this.debt).toLocaleString()}`;
+        document.getElementById('energy-val').innerText = `${Math.max(0, this.energy)}%`;
+
+        const statusEl = document.getElementById('status-val');
+        statusEl.className = "status-badge ";
+
+        if (this.cash <= 0 && this.debt > 4000) {
+          statusEl.innerText = "BANKRUPTT";
+          statusEl.classList.add("status-bankrupt");
+        } else if (this.cash < 200 || this.debt > 3000) {
+          statusEl.innerText = "BROKE";
+          statusEl.classList.add("status-broke");
+        } else if (this.debt > 1500) {
+          statusEl.innerText = "IN DEBT";
+          statusEl.classList.add("status-debt");
+        } else if (this.cash < 1000) {
+          statusEl.innerText = "STRUGGLING";
+          statusEl.classList.add("status-struggling");
+        } else {
+          statusEl.innerText = "STABLE";
+          statusEl.classList.add("status-stable");
+        }
+      }
+
+      work() {
+        if (this.energy < 20) {
+          alert("You are completely exhausted. Rest before working again.");
+          return;
+        }
+        this.cash += 350;
+        this.energy -= 25;
+        this.updateHUD();
+      }
+
+      rest() {
+        if (this.cash < 40) {
+          alert("Not enough cash for a decent meal.");
+          return;
+        }
+        this.cash -= 40;
+        this.energy = Math.min(100, this.energy + 30);
+        this.updateHUD();
+      }
+
+      payDebt() {
+        if (this.cash < 300) {
+          alert("Not enough cash to make this principal payment.");
+          return;
+        }
+        this.cash -= 300;
+        this.debt = Math.max(0, this.debt - 300);
+        this.updateHUD();
+      }
+
+      endMonth() {
+        // Apply monthly interest to debt
+        if (this.debt > 0) {
+          this.debt += Math.round(this.debt * this.debtInterest);
+        }
+
+        // Deduct Rent and Living Costs
+        const totalExpenses = this.rent + this.livingCost;
+        this.cash -= totalExpenses;
+
+        // If cash goes negative, emergency credit card debt kicks in
+        if (this.cash < 0) {
+          this.debt += Math.abs(this.cash);
+          this.cash = 0;
+        }
+
+        // Advance Calendar
+        this.monthIndex++;
+        if (this.monthIndex >= 12) {
+          this.monthIndex = 0;
+          this.year++;
+        }
+
+        this.energy = Math.min(100, this.energy + 10);
+        this.updateHUD();
+        this.checkHistoricalEvents();
+      }
+
+      checkHistoricalEvents() {
+        const currentMonthName = this.months[this.monthIndex];
+        const event = this.timelineEvents.find(e => e.year === this.year && e.month === currentMonthName);
+        
+        if (event) {
+          this.showModal(event);
+        }
+      }
+
+      showModal(event) {
+        const modal = document.getElementById('event-modal');
+        document.getElementById('modal-title').innerText = event.title;
+        document.getElementById('modal-desc').innerText = event.desc;
+        const choicesContainer = document.getElementById('modal-choices');
+        choicesContainer.innerHTML = "";
+
+        event.choices.forEach(choice => {
+          const btn = document.createElement('button');
+          btn.innerText = choice.text;
+          btn.onclick = () => {
+            choice.action();
+            modal.style.display = "none";
+            this.updateHUD();
+          };
+          choicesContainer.appendChild(btn);
+        });
+
+        modal.style.display = "block";
+      }
+    }
+
+    // Expose game instance globally for UI buttons
+    window.game = new BankruptGame();
+  </script>
+</body>
+</html>
