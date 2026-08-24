@@ -10,25 +10,26 @@
     
     #canvas-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
 
-    /* Top HUD / Status Bar */
+    /* Top HUD */
     #hud {
       position: absolute;
-      top: 14px;
-      left: 14px;
-      right: 14px;
+      top: 12px;
+      left: 12px;
+      right: 12px;
       display: flex;
+      flex-wrap: wrap;
       justify-content: space-between;
-      align-items: center;
-      background: rgba(15, 18, 30, 0.88);
+      gap: 8px;
+      background: rgba(15, 18, 30, 0.9);
       border: 1px solid rgba(255, 255, 255, 0.12);
       backdrop-filter: blur(12px);
-      padding: 10px 16px;
+      padding: 10px 14px;
       border-radius: 12px;
       z-index: 10;
     }
     .metric { display: flex; flex-direction: column; gap: 2px; }
-    .metric-title { font-size: 10px; color: #8a99ad; text-transform: uppercase; letter-spacing: 0.6px; }
-    .metric-value { font-size: 16px; font-weight: 700; }
+    .metric-title { font-size: 9px; color: #8a99ad; text-transform: uppercase; letter-spacing: 0.6px; }
+    .metric-value { font-size: 15px; font-weight: 700; }
     .status-badge {
       padding: 4px 10px;
       border-radius: 6px;
@@ -36,6 +37,7 @@
       text-transform: uppercase;
       font-size: 11px;
       letter-spacing: 0.5px;
+      align-self: center;
     }
     .status-stable { background: #2a9d8f; color: #fff; }
     .status-struggling { background: #e9c46a; color: #111; }
@@ -43,31 +45,31 @@
     .status-broke { background: #e76f51; color: #fff; }
     .status-bankrupt { background: #d90429; color: #fff; }
 
-    /* Action Deck / Controls */
+    /* Action Deck */
     #action-bar {
       position: absolute;
-      bottom: 20px;
+      bottom: 16px;
       left: 50%;
       transform: translateX(-50%);
-      display: flex;
-      gap: 8px;
-      width: 92%;
-      max-width: 480px;
-      background: rgba(15, 18, 30, 0.92);
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      width: 95%;
+      max-width: 540px;
+      background: rgba(15, 18, 30, 0.94);
       border: 1px solid rgba(255, 255, 255, 0.15);
-      padding: 10px;
+      padding: 8px;
       border-radius: 14px;
       backdrop-filter: blur(12px);
       z-index: 10;
     }
     button.game-btn {
-      flex: 1;
       background: #1f293d;
       color: #fff;
       border: 1px solid rgba(255, 255, 255, 0.1);
-      padding: 10px 6px;
+      padding: 8px 4px;
       border-radius: 8px;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 600;
       cursor: pointer;
       display: flex;
@@ -76,37 +78,49 @@
       gap: 2px;
     }
     button.game-btn:active { background: #3b82f6; transform: scale(0.96); }
-    button.game-btn small { font-size: 9px; color: #9ca3af; }
+    button.game-btn small { font-size: 8px; color: #9ca3af; text-align: center; }
 
-    /* Modal / Event Dialog */
-    #event-modal {
+    /* Event Modal */
+    #event-modal, #trade-modal {
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 90%;
-      max-width: 420px;
+      width: 92%;
+      max-width: 440px;
       background: #151928;
       border: 1px solid #3b82f6;
       border-radius: 16px;
       padding: 20px;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.9);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.95);
       z-index: 20;
       display: none;
     }
-    #event-modal h2 { margin-bottom: 8px; font-size: 17px; color: #60a5fa; }
-    #event-modal p { font-size: 13px; line-height: 1.45; color: #d1d5db; margin-bottom: 16px; }
+    .modal-header { font-size: 16px; color: #60a5fa; margin-bottom: 8px; font-weight: 700; }
+    .modal-body { font-size: 13px; line-height: 1.45; color: #d1d5db; margin-bottom: 16px; }
     .modal-choices { display: flex; flex-direction: column; gap: 8px; }
     .modal-choices button {
       background: #20273d;
       border: 1px solid rgba(255,255,255,0.1);
       color: #fff;
-      padding: 10px;
+      padding: 10px 12px;
       border-radius: 8px;
       font-size: 12px;
       text-align: left;
+      cursor: pointer;
+      line-height: 1.35;
     }
     .modal-choices button:hover { background: #3b82f6; }
+    .close-btn {
+      background: #374151;
+      color: #fff;
+      border: none;
+      padding: 8px;
+      border-radius: 6px;
+      margin-top: 10px;
+      width: 100%;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -125,13 +139,18 @@
       <span id="debt-val" class="metric-value" style="color: #f87171;">$2,500</span>
     </div>
     <div class="metric">
+      <span class="metric-title">Bitcoin</span>
+      <span id="btc-val" class="metric-value" style="color: #f59e0b;">0 BTC</span>
+    </div>
+    <div class="metric">
+      <span class="metric-title">BTC Price</span>
+      <span id="btc-price" class="metric-value" style="color: #fbbf24;">$0.00</span>
+    </div>
+    <div class="metric">
       <span class="metric-title">Energy</span>
       <span id="energy-val" class="metric-value">100%</span>
     </div>
-    <div class="metric">
-      <span class="metric-title">Status</span>
-      <span id="status-val" class="status-badge status-struggling">STRUGGLING</span>
-    </div>
+    <div id="status-val" class="status-badge status-struggling">STRUGGLING</div>
   </div>
 
   <div id="canvas-container"></div>
@@ -139,26 +158,43 @@
   <div id="action-bar">
     <button class="game-btn" onclick="game.work()">
       💼 Work
-      <small>+$350, -25%</small>
+      <small>+$400, -25%</small>
     </button>
     <button class="game-btn" onclick="game.rest()">
-      ☕ Eat & Rest
+      ☕ Rest
       <small>-$40, +30%</small>
     </button>
     <button class="game-btn" onclick="game.payDebt()">
       💳 Pay Debt
       <small>-$300 Debt</small>
     </button>
+    <button class="game-btn" onclick="game.openTradeModal()">
+      ₿ Trade BTC
+      <small>Buy / Sell</small>
+    </button>
     <button class="game-btn" onclick="game.endMonth()">
       🗓️ End Month
-      <small>Pay Rent</small>
+      <small>Pay Bills</small>
     </button>
   </div>
 
+  <!-- Macro Event Modal -->
   <div id="event-modal">
-    <h2 id="modal-title">Macro Event</h2>
-    <p id="modal-desc">Event description...</p>
+    <div id="modal-title" class="modal-header">Macro Event</div>
+    <div id="modal-desc" class="modal-body">Event details...</div>
     <div id="modal-choices" class="modal-choices"></div>
+  </div>
+
+  <!-- Trade Modal -->
+  <div id="trade-modal">
+    <div class="modal-header">₿ Bitcoin Ledger</div>
+    <div id="trade-body" class="modal-body">Current BTC Price: $0.00</div>
+    <div class="modal-choices">
+      <button onclick="game.buyBTC(100)">Buy $100 worth of BTC</button>
+      <button onclick="game.sellBTC(0.5)">Sell 50% of your BTC Holdings</button>
+      <button onclick="game.sellBTC(1.0)">Sell 100% of your BTC Holdings</button>
+    </div>
+    <button class="close-btn" onclick="document.getElementById('trade-modal').style.display='none'">Close</button>
   </div>
 
   <script type="importmap">
@@ -172,7 +208,7 @@
   <script type="module">
     import * as THREE from 'three';
 
-    // --- 1. Scene & Camera Setup ---
+    // --- 3D Scene Setup ---
     const container = document.getElementById('canvas-container');
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x0a0c13);
@@ -186,143 +222,57 @@
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.1;
     container.appendChild(renderer.domElement);
 
-    // --- 2. Atmospheric Lighting ---
-    const ambientLight = new THREE.AmbientLight(0x28324e, 1.2);
-    scene.add(ambientLight);
-
-    // Room Ceiling Warm Lamp
+    // Lights
+    scene.add(new THREE.AmbientLight(0x28324e, 1.2));
     const ceilingLight = new THREE.PointLight(0xffecd1, 1.8, 14);
     ceilingLight.position.set(0, 6, 0);
     ceilingLight.castShadow = true;
     scene.add(ceilingLight);
 
-    // Cool Window Light
-    const windowLight = new THREE.DirectionalLight(0x5ca0d3, 1.2);
-    windowLight.position.set(-10, 8, -6);
-    windowLight.castShadow = true;
-    scene.add(windowLight);
-
-    // Screen Glow (Cyan/Blue CRT monitor light)
     const monitorLight = new THREE.PointLight(0x38bdf8, 2.2, 4);
     monitorLight.position.set(-2, 2.4, -2.4);
     scene.add(monitorLight);
 
-    // --- 3. Room Geometry (Walls & Floor) ---
-    const floorMat = new THREE.MeshStandardMaterial({ color: 0x221a15, roughness: 0.8 });
-    const wallMat = new THREE.MeshStandardMaterial({ color: 0x242d38, roughness: 0.9 });
-
-    // Floor
-    const floor = new THREE.Mesh(new THREE.BoxGeometry(9, 0.4, 9), floorMat);
+    // Geometry
+    const floor = new THREE.Mesh(new THREE.BoxGeometry(9, 0.4, 9), new THREE.MeshStandardMaterial({ color: 0x221a15 }));
     floor.position.y = -0.2;
     floor.receiveShadow = true;
     scene.add(floor);
 
-    // Back Wall (Left)
-    const backWallLeft = new THREE.Mesh(new THREE.BoxGeometry(0.3, 6, 9), wallMat);
-    backWallLeft.position.set(-4.5, 2.8, 0);
-    backWallLeft.receiveShadow = true;
-    scene.add(backWallLeft);
+    const wallMat = new THREE.MeshStandardMaterial({ color: 0x242d38 });
+    const backWall1 = new THREE.Mesh(new THREE.BoxGeometry(0.3, 6, 9), wallMat);
+    backWall1.position.set(-4.5, 2.8, 0);
+    scene.add(backWall1);
 
-    // Back Wall (Right)
-    const backWallRight = new THREE.Mesh(new THREE.BoxGeometry(9, 6, 0.3), wallMat);
-    backWallRight.position.set(0, 2.8, -4.5);
-    backWallRight.receiveShadow = true;
-    scene.add(backWallRight);
+    const backWall2 = new THREE.Mesh(new THREE.BoxGeometry(9, 6, 0.3), wallMat);
+    backWall2.position.set(0, 2.8, -4.5);
+    scene.add(backWall2);
 
-    // Window Frame on Right Wall
-    const winFrameMat = new THREE.MeshStandardMaterial({ color: 0x0f172a });
-    const winGlassMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.4 });
-    const winGlass = new THREE.Mesh(new THREE.PlaneGeometry(2.5, 3), winGlassMat);
-    winGlass.position.set(1.5, 3.2, -4.34);
-    scene.add(winGlass);
-
-    // Rug
-    const rug = new THREE.Mesh(
-      new THREE.PlaneGeometry(4.5, 3.5),
-      new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 1.0 })
-    );
-    rug.rotation.x = -Math.PI / 2;
-    rug.position.set(0, 0.01, 0.5);
-    rug.receiveShadow = true;
-    scene.add(rug);
-
-    // --- 4. Furniture & Props ---
-    // Desk
-    const deskMat = new THREE.MeshStandardMaterial({ color: 0x3e2723 });
-    const desk = new THREE.Mesh(new THREE.BoxGeometry(3.2, 1.4, 1.6), deskMat);
+    // Desk & Monitor
+    const desk = new THREE.Mesh(new THREE.BoxGeometry(3.2, 1.4, 1.6), new THREE.MeshStandardMaterial({ color: 0x3e2723 }));
     desk.position.set(-2.4, 0.7, -2.8);
-    desk.castShadow = true;
-    desk.receiveShadow = true;
     scene.add(desk);
 
-    // Computer Monitor
-    const monitor = new THREE.Mesh(
-      new THREE.BoxGeometry(1.4, 0.9, 0.1),
-      new THREE.MeshStandardMaterial({ color: 0x0f172a })
-    );
-    monitor.position.set(-2.4, 1.9, -3.1);
-    scene.add(monitor);
-
-    // Glowing Screen
-    const screen = new THREE.Mesh(
-      new THREE.PlaneGeometry(1.3, 0.8),
-      new THREE.MeshBasicMaterial({ color: 0x38bdf8 })
-    );
+    const screen = new THREE.Mesh(new THREE.PlaneGeometry(1.3, 0.8), new THREE.MeshBasicMaterial({ color: 0x38bdf8 }));
     screen.position.set(-2.4, 1.9, -3.04);
     scene.add(screen);
 
-    // Desk Chair
-    const chairMat = new THREE.MeshStandardMaterial({ color: 0x1e293b });
-    const chair = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.2, 1.2), chairMat);
-    chair.position.set(-2.4, 0.6, -1.5);
-    chair.castShadow = true;
-    scene.add(chair);
-
-    // Bed
-    const bedFrame = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.6, 4.4), deskMat);
-    bedFrame.position.set(2.8, 0.3, -2);
-    scene.add(bedFrame);
-
-    const mattress = new THREE.Mesh(
-      new THREE.BoxGeometry(2.4, 0.5, 4.2),
-      new THREE.MeshStandardMaterial({ color: 0x334155 })
-    );
-    mattress.position.set(2.8, 0.7, -2);
-    mattress.castShadow = true;
-    scene.add(mattress);
-
-    const pillow = new THREE.Mesh(
-      new THREE.BoxGeometry(1.8, 0.2, 0.8),
-      new THREE.MeshStandardMaterial({ color: 0xe2e8f0 })
-    );
-    pillow.position.set(2.8, 1.0, -3.5);
-    scene.add(pillow);
-
-    // --- 5. Character Seated at the Desk ---
-    const skinMat = new THREE.MeshStandardMaterial({ color: 0xe0a98b });
-    const clothMat = new THREE.MeshStandardMaterial({ color: 0x3b82f6 });
-
+    // Character
     const characterGroup = new THREE.Group();
-
-    // Torso
-    const torso = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.9, 0.5), clothMat);
+    const torso = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.9, 0.5), new THREE.MeshStandardMaterial({ color: 0x3b82f6 }));
     torso.position.set(0, 1.5, 0);
     characterGroup.add(torso);
 
-    // Head
-    const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), skinMat);
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), new THREE.MeshStandardMaterial({ color: 0xe0a98b }));
     head.position.set(0, 2.2, 0);
     characterGroup.add(head);
 
-    // Position Character in front of screen
     characterGroup.position.set(-2.4, 0, -1.6);
-    characterGroup.rotation.y = 0;
     scene.add(characterGroup);
 
-    // Clutter/Bills pile that spawns when in debt
+    // Debt Paper Clutter
     const billGroup = new THREE.Group();
     const paperMat = new THREE.MeshStandardMaterial({ color: 0xfef08a });
     for (let i = 0; i < 6; i++) {
@@ -334,23 +284,13 @@
     }
     scene.add(billGroup);
 
-    // --- 6. Render Loop ---
     let clock = new THREE.Clock();
     function animate() {
       requestAnimationFrame(animate);
       const t = clock.getElapsedTime();
-
-      // Subtle breathing animation on character
       torso.position.y = 1.5 + Math.sin(t * 2) * 0.02;
       head.position.y = 2.2 + Math.sin(t * 2) * 0.02;
-
-      // Monitor flicker / pulse
       monitorLight.intensity = 2.0 + Math.sin(t * 6) * 0.3;
-
-      // Smooth camera bob
-      camera.position.y = 11 + Math.sin(t * 0.4) * 0.2;
-      camera.lookAt(0, 1.2, 0);
-
       renderer.render(scene, camera);
     }
     animate();
@@ -361,7 +301,7 @@
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    // --- 7. Game State Engine ---
+    // --- Complete Macro Timeline & Game Engine ---
     class BankruptGame {
       constructor() {
         this.year = 2008;
@@ -375,24 +315,89 @@
         this.livingCost = 250;
         this.debtInterest = 0.03;
         this.btcHoldings = 0;
+        this.btcPrice = 0.00;
 
+        // Full Historical Timeline Deck (2008 - 2021)
         this.timelineEvents = [
           {
             year: 2008, month: "Sep",
-            title: "Wall Street Turmoil (September 2008)",
-            desc: "Lehman Brothers collapses. Credit dries up globally. Your landlord pushes rent higher to cover his own mortgages.",
+            title: "Lehman Brothers Collapses (Sep 2008)",
+            desc: "Global financial crisis erupts. Credit markets freeze worldwide. Your landlord raises rent by $150 to service his own adjustable-rate loans.",
             choices: [
-              { text: "Accept rent hike & work extra (+Rent, -Energy)", action: () => { this.rent += 150; this.energy -= 20; } },
-              { text: "Cut food & essentials strictly (-Living Cost)", action: () => { this.livingCost -= 60; this.energy -= 10; } }
+              { text: "Accept rent hike and work extra hours (+Rent, -Energy)", action: () => { this.rent += 150; this.energy -= 25; } },
+              { text: "Cut food and living budget strictly (-Living Cost)", action: () => { this.livingCost -= 60; this.energy -= 15; } }
             ]
           },
           {
             year: 2009, month: "Jan",
-            title: "Genesis: Chancellor on Brink of Second Bailout",
-            desc: "Newspaper headline: 'The Times 03/Jan/2009 Chancellor on brink of second bailout for banks'. A cryptography forum announces a decentralized peer-to-peer money called Bitcoin.",
+            title: "The Times 03/Jan/2009 Bailout",
+            desc: "Headline: 'Chancellor on brink of second bailout for banks.' An anonymous cypherpunk publishes Bitcoin. You can mine it on your home PC for pennies.",
             choices: [
-              { text: "Ignore: 'Just internet play-money.'", action: () => {} },
-              { text: "Mine on home PC (-$50 Electric, +50 BTC)", action: () => { this.cash -= 50; this.btcHoldings += 50; } }
+              { text: "Ignore it: 'Just nerdy internet play-money.'", action: () => {} },
+              { text: "Run node & CPU miner (-$50 Electricity, +100 BTC)", action: () => { this.cash -= 50; this.btcHoldings += 100; } }
+            ]
+          },
+          {
+            year: 2010, month: "May",
+            title: "10,000 BTC for Two Pizzas (May 2010)",
+            desc: "A programmer trades 10,000 Bitcoins for two pizzas. Bitcoin officially establishes market pricing at ~$0.004 each.",
+            choices: [
+              { text: "Laugh off the pizza story and keep working", action: () => {} },
+              { text: "Buy $40 worth of BTC (~10,000 BTC)", action: () => { if(this.cash >= 40) { this.cash -= 40; this.btcHoldings += 10000; } } }
+            ]
+          },
+          {
+            year: 2011, month: "Jun",
+            title: "The First Parabolic Spike ($30 BTC)",
+            desc: "Bitcoin surges to $30. Media calls it a bubble. Inflation makes your groceries 20% more expensive.",
+            choices: [
+              { text: "Focus entirely on paying down credit cards", action: () => { this.payDebt(); } },
+              { text: "Research Bitcoin whitepaper and secure self-custody", action: () => { this.energy -= 10; } }
+            ]
+          },
+          {
+            year: 2013, month: "Mar",
+            title: "Cyprus Banking Haircut (Mar 2013)",
+            desc: "Cyprus banks seize depositor savings to bail out institutions. Bitcoin hits $1,000 as people seek censorship-resistant money.",
+            choices: [
+              { text: "Keep all emergency savings in traditional bank account", action: () => {} },
+              { text: "Keep a portion of savings in Bitcoin", action: () => { this.buyBTC(200); } }
+            ]
+          },
+          {
+            year: 2017, month: "Dec",
+            title: "Retail Euphoria ($20,000 BTC)",
+            desc: "Bitcoin crosses $19,000. Mainstream news is non-stop crypto. Everyone asks if they should take loans to buy.",
+            choices: [
+              { text: "Take an emergency loan to buy crypto (Extremely Dangerous)", action: () => { this.debt += 2000; this.buyBTC(2000); } },
+              { text: "Take profit / sell some BTC to wipe out personal debt", action: () => { this.sellBTC(0.5); } },
+              { text: "Hold your keys patiently", action: () => {} }
+            ]
+          },
+          {
+            year: 2018, month: "Nov",
+            title: "Crypto Winter (-80% Crash)",
+            desc: "Bitcoin plummets toward $3,200. Pundits declare Bitcoin dead for the 300th time. Living costs remain high.",
+            choices: [
+              { text: "Panic and sell everything at the bottom", action: () => { this.sellBTC(1.0); } },
+              { text: "Tune out noise and keep managing your daily fiat budget", action: () => {} }
+            ]
+          },
+          {
+            year: 2020, month: "Mar",
+            title: "Global Lockdowns & Infinite Money Printing",
+            desc: "Trillions of fiat dollars printed overnight in stimulus. Real inflation hits food, housing, and energy hard.",
+            choices: [
+              { text: "Watch fiat purchasing power erode as bills spike (+30% Expenses)", action: () => { this.livingCost += 120; } },
+              { text: "Allocate surplus fiat cash into hard assets", action: () => { this.buyBTC(300); } }
+            ]
+          },
+          {
+            year: 2021, month: "Nov",
+            title: "The Sound Money Thesis ($69,000)",
+            desc: "Institutions, public companies, and nations adopt Bitcoin. You look back across the entire journey from 2008 to today.",
+            choices: [
+              { text: "Evaluate your lifetime financial standing", action: () => { this.finishGame(); } }
             ]
           }
         ];
@@ -400,19 +405,44 @@
         this.updateHUD();
       }
 
+      getBTCPrice() {
+        if (this.year < 2010) return 0.00;
+        if (this.year === 2010) return 0.004;
+        if (this.year === 2011) return 15;
+        if (this.year === 2012) return 10;
+        if (this.year === 2013) return 800;
+        if (this.year === 2014) return 350;
+        if (this.year === 2015) return 250;
+        if (this.year === 2016) return 600;
+        if (this.year === 2017) return 15000;
+        if (this.year === 2018) return 3800;
+        if (this.year === 2019) return 7500;
+        if (this.year === 2020) return 18000;
+        if (this.year >= 2021) return 55000;
+        return 0;
+      }
+
       updateHUD() {
+        this.btcPrice = this.getBTCPrice();
         document.getElementById('date-val').innerText = `${this.months[this.monthIndex]} ${this.year}`;
         document.getElementById('cash-val').innerText = `$${Math.round(this.cash).toLocaleString()}`;
         document.getElementById('debt-val').innerText = `$${Math.round(this.debt).toLocaleString()}`;
+        document.getElementById('btc-val').innerText = `${this.btcHoldings.toFixed(2)} BTC`;
+        document.getElementById('btc-price').innerText = this.btcPrice > 0 ? `$${this.btcPrice.toLocaleString()}` : '$0.00';
         document.getElementById('energy-val').innerText = `${Math.max(0, this.energy)}%`;
 
+        const totalNetWorth = (this.cash + (this.btcHoldings * this.btcPrice)) - this.debt;
         const statusEl = document.getElementById('status-val');
         statusEl.className = "status-badge ";
 
-        if (this.cash <= 0 && this.debt > 4000) {
+        if (this.cash <= 0 && this.debt > 4500 && (this.btcHoldings * this.btcPrice) < 500) {
           statusEl.innerText = "BANKRUPTT";
           statusEl.classList.add("status-bankrupt");
           billGroup.visible = true;
+        } else if (totalNetWorth > 50000) {
+          statusEl.innerText = "SOVEREIGN";
+          statusEl.classList.add("status-stable");
+          billGroup.visible = false;
         } else if (this.cash < 200 || this.debt > 3000) {
           statusEl.innerText = "BROKE";
           statusEl.classList.add("status-broke");
@@ -433,42 +463,57 @@
       }
 
       work() {
-        if (this.energy < 20) {
-          alert("Exhausted. Rest first.");
-          return;
-        }
-        this.cash += 350;
+        if (this.energy < 20) { alert("Too exhausted. Eat & Rest."); return; }
+        this.cash += 400;
         this.energy -= 25;
         this.updateHUD();
       }
 
       rest() {
-        if (this.cash < 40) {
-          alert("Not enough money for groceries.");
-          return;
-        }
+        if (this.cash < 40) { alert("Not enough money for food."); return; }
         this.cash -= 40;
         this.energy = Math.min(100, this.energy + 30);
         this.updateHUD();
       }
 
       payDebt() {
-        if (this.cash < 300) {
-          alert("Need at least $300 cash.");
-          return;
-        }
+        if (this.cash < 300) { alert("Need at least $300 cash."); return; }
         this.cash -= 300;
         this.debt = Math.max(0, this.debt - 300);
         this.updateHUD();
       }
 
-      endMonth() {
-        if (this.debt > 0) {
-          this.debt += Math.round(this.debt * this.debtInterest);
+      openTradeModal() {
+        if (this.year < 2009) {
+          alert("Bitcoin has not been launched yet.");
+          return;
         }
+        document.getElementById('trade-body').innerText = `Current BTC Price: $${this.btcPrice.toLocaleString()} | Your Holdings: ${this.btcHoldings.toFixed(4)} BTC ($${Math.round(this.btcHoldings * this.btcPrice).toLocaleString()})`;
+        document.getElementById('trade-modal').style.display = 'block';
+      }
 
-        const totalExpenses = this.rent + this.livingCost;
-        this.cash -= totalExpenses;
+      buyBTC(usdAmount) {
+        if (this.cash < usdAmount) { alert("Not enough fiat cash."); return; }
+        if (this.btcPrice <= 0) { alert("Bitcoin is not yet traded on open markets."); return; }
+        this.cash -= usdAmount;
+        this.btcHoldings += (usdAmount / this.btcPrice);
+        document.getElementById('trade-modal').style.display = 'none';
+        this.updateHUD();
+      }
+
+      sellBTC(percentage) {
+        if (this.btcHoldings <= 0) { alert("No Bitcoin to sell."); return; }
+        const sellAmount = this.btcHoldings * percentage;
+        const fiatGained = sellAmount * this.btcPrice;
+        this.btcHoldings -= sellAmount;
+        this.cash += fiatGained;
+        document.getElementById('trade-modal').style.display = 'none';
+        this.updateHUD();
+      }
+
+      endMonth() {
+        if (this.debt > 0) this.debt += Math.round(this.debt * this.debtInterest);
+        this.cash -= (this.rent + this.livingCost);
 
         if (this.cash < 0) {
           this.debt += Math.abs(this.cash);
@@ -511,6 +556,11 @@
         });
 
         modal.style.display = "block";
+      }
+
+      finishGame() {
+        const netWorth = Math.round((this.cash + (this.btcHoldings * this.btcPrice)) - this.debt);
+        alert(`Journey Complete!\nFinal Net Worth: $${netWorth.toLocaleString()}\nTotal Debt: $${Math.round(this.debt).toLocaleString()}\nTotal BTC: ${this.btcHoldings.toFixed(2)} BTC`);
       }
     }
 
