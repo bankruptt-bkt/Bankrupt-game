@@ -1,374 +1,214 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>BANKRUPTT - 3D Open World</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; }
-    body { background: #000; color: #fff; font-family: 'Segoe UI', Tahoma, sans-serif; overflow: hidden; height: 100vh; }
-    #canvas-container { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    /* Top HUD */
-    #hud {
-      position: absolute; top: 10px; left: 10px; right: 10px;
-      display: flex; justify-content: space-between; align-items: center;
-      background: rgba(15, 23, 42, 0.9); padding: 8px 14px;
-      border-radius: 12px; border: 1px solid rgba(255,255,255,0.15);
-      z-index: 10; font-size: 13px; font-weight: bold;
-    }
-    .hud-val { color: #4ade80; }
-    .debt-val { color: #f87171; }
+    <title>BANKRUPT — The Survival Game</title>
 
-    /* Floating Interaction Prompt */
-    #interact-prompt {
-      position: absolute; top: 75%; left: 50%; transform: translate(-50%, -50%);
-      background: #2563eb; color: #fff; padding: 12px 24px; border-radius: 30px;
-      font-weight: bold; font-size: 15px; box-shadow: 0 4px 20px rgba(37,99,235,0.6);
-      display: none; z-index: 20; border: 2px solid #fff; cursor: pointer;
-    }
-
-    /* Mobile Joystick Controls */
-    #dpad {
-      position: absolute; bottom: 25px; left: 25px;
-      width: 130px; height: 130px; z-index: 10;
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px;
-    }
-    .dpad-btn {
-      background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3);
-      border-radius: 10px; color: #fff; font-size: 18px; font-weight: bold;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .dpad-btn:active { background: #3b82f6; }
-
-    /* Dialog Popups */
-    #dialog {
-      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      width: 88%; max-width: 400px; background: #0f172a; border: 2px solid #3b82f6;
-      border-radius: 16px; padding: 20px; z-index: 30; display: none;
-    }
-    #dialog h2 { font-size: 18px; color: #60a5fa; margin-bottom: 8px; }
-    #dialog p { font-size: 13px; line-height: 1.4; color: #cbd5e1; margin-bottom: 15px; }
-    .dialog-btn {
-      width: 100%; padding: 10px; margin-bottom: 8px; background: #1e293b;
-      border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 8px;
-      font-weight: 600; cursor: pointer; text-align: left;
-    }
-    .dialog-btn:hover { background: #2563eb; }
-  </style>
+    <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-  <div id="hud">
-    <div>📅 <span id="hud-date">Jan 2008</span></div>
-    <div>💵 <span id="hud-cash" class="hud-val">$1,200</span></div>
-    <div>💳 <span id="hud-debt" class="debt-val">$2,500</span></div>
-    <div>⚡ <span id="hud-energy">100%</span></div>
-    <div>₿ <span id="hud-btc" style="color:#fbbf24;">0 BTC</span></div>
-  </div>
+<div class="game">
 
-  <div id="canvas-container"></div>
+    <!-- HEADER -->
+    <header class="topbar">
+        <div>
+            <div class="logo">BANKRUPT</div>
+            <div class="subtitle">SURVIVE THE ECONOMY</div>
+        </div>
 
-  <div id="interact-prompt" onclick="world.triggerInteraction()">TAP TO ENTER</div>
+        <div class="month-box">
+            <span>MONTH</span>
+            <strong id="month">1</strong>
+        </div>
+    </header>
 
-  <!-- Mobile On-Screen D-Pad -->
-  <div id="dpad">
-    <div></div>
-    <div class="dpad-btn" id="btn-up">▲</div>
-    <div></div>
-    <div class="dpad-btn" id="btn-left">◀</div>
-    <div></div>
-    <div class="dpad-btn" id="btn-right">▶</div>
-    <div></div>
-    <div class="dpad-btn" id="btn-down">▼</div>
-    <div></div>
-  </div>
 
-  <!-- Interactive Building Modal -->
-  <div id="dialog">
-    <h2 id="dlg-title">Building</h2>
-    <p id="dlg-desc">Description</p>
-    <div id="dlg-actions"></div>
-    <button class="dialog-btn" style="background:#475569; text-align:center;" onclick="document.getElementById('dialog').style.display='none'">Exit Building</button>
-  </div>
+    <!-- INTRO -->
+    <section id="introScreen" class="screen active">
 
-  <script type="importmap">
-    {
-      "imports": {
-        "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
-      }
-    }
-  </script>
+        <div class="intro-card">
 
-  <script type="module">
-    import * as THREE from 'three';
+            <div class="year">2019</div>
 
-    // --- 1. 3D Scene & City Setup ---
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x87ceeb);
-    scene.fog = new THREE.Fog(0x87ceeb, 20, 60);
+            <h1>Everything was<br><span>supposed to be fine.</span></h1>
 
-    const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.shadowMap.enabled = true;
-    document.getElementById('canvas-container').appendChild(renderer.domElement);
+            <p>
+                You are 26 years old.
+                You have a job, a small amount of savings,
+                and no serious debt.
+            </p>
 
-    scene.add(new THREE.AmbientLight(0xffffff, 0.8));
-    const sun = new THREE.DirectionalLight(0xfffaed, 1.2);
-    sun.position.set(20, 40, 20);
-    sun.castShadow = true;
-    scene.add(sun);
+            <p>
+                But the economy doesn't care about your plans.
+            </p>
 
-    // Ground / Asphalt Road
-    const ground = new THREE.Mesh(
-      new THREE.PlaneGeometry(80, 80),
-      new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.8 })
-    );
-    ground.rotation.x = -Math.PI / 2;
-    ground.receiveShadow = true;
-    scene.add(ground);
+            <button onclick="startGame()" class="primary-btn">
+                START YOUR LIFE
+            </button>
 
-    // Sidewalk
-    const sidewalk = new THREE.Mesh(
-      new THREE.PlaneGeometry(30, 30),
-      new THREE.MeshStandardMaterial({ color: 0x94a3b8 })
-    );
-    sidewalk.rotation.x = -Math.PI / 2;
-    sidewalk.position.y = 0.05;
-    scene.add(sidewalk);
+        </div>
 
-    // --- 2. Interactive City Buildings ---
-    const zones = [
-      { name: "Apartment", color: 0x3b82f6, x: -8, z: -8, w: 6, h: 8, d: 6, label: "🏠 APARTMENT\n(Sleep / Advance Month)" },
-      { name: "Office", color: 0x10b981, x: 8, z: -8, w: 6, h: 12, d: 6, label: "💼 CORPORATE OFFICE\n(Work Shifts)" },
-      { name: "Bank", color: 0xef4444, x: -8, z: 8, w: 6, h: 6, d: 6, label: "🏦 CITY BANK\n(Pay Debt / Take Loans)" },
-      { name: "Market", color: 0xf59e0b, x: 8, z: 8, w: 6, h: 5, d: 6, label: "🛒 SUPERMARKET & BTC\n(Food / Ledger)" }
-    ];
+    </section>
 
-    zones.forEach(zone => {
-      const bldgGeo = new THREE.BoxGeometry(zone.w, zone.h, zone.d);
-      const bldgMat = new THREE.MeshStandardMaterial({ color: zone.color, roughness: 0.5 });
-      const bldg = new THREE.Mesh(bldgGeo, bldgMat);
-      bldg.position.set(zone.x, zone.h / 2, zone.z);
-      bldg.castShadow = true;
-      bldg.receiveShadow = true;
-      scene.add(bldg);
-    });
 
-    // --- 3. Playable Character (Minecraft Style) ---
-    const player = new THREE.Group();
-    const bodyMat = new THREE.MeshStandardMaterial({ color: 0xef4444 });
-    const skinMat = new THREE.MeshStandardMaterial({ color: 0xfcd34d });
+    <!-- GAME -->
+    <section id="gameScreen" class="screen">
 
-    const body = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.0, 0.5), bodyMat);
-    body.position.y = 1.0;
-    body.castShadow = true;
-    player.add(body);
+        <!-- STATUS -->
+        <div class="stats">
 
-    const head = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.6, 0.6), skinMat);
-    head.position.y = 1.8;
-    head.castShadow = true;
-    player.add(head);
+            <div class="stat">
+                <span>💰 CASH</span>
+                <strong id="cash">₹40,000</strong>
+            </div>
 
-    scene.add(player);
+            <div class="stat">
+                <span>💼 INCOME</span>
+                <strong id="income">₹25,000</strong>
+            </div>
 
-    // --- 4. Controls & Movement Loop ---
-    const move = { forward: false, backward: false, left: false, right: false };
+            <div class="stat">
+                <span>💳 DEBT</span>
+                <strong id="debt">₹0</strong>
+            </div>
 
-    window.addEventListener('keydown', (e) => {
-      const k = e.key.toLowerCase();
-      if (k === 'w' || k === 'arrowup') move.forward = true;
-      if (k === 's' || k === 'arrowdown') move.backward = true;
-      if (k === 'a' || k === 'arrowleft') move.left = true;
-      if (k === 'd' || k === 'arrowright') move.right = true;
-    });
+            <div class="stat">
+                <span>📈 INFLATION</span>
+                <strong id="inflation">4%</strong>
+            </div>
 
-    window.addEventListener('keyup', (e) => {
-      const k = e.key.toLowerCase();
-      if (k === 'w' || k === 'arrowup') move.forward = false;
-      if (k === 's' || k === 'arrowdown') move.backward = false;
-      if (k === 'a' || k === 'arrowleft') move.left = false;
-      if (k === 'd' || k === 'arrowright') move.right = false;
-    });
+        </div>
 
-    // Mobile D-pad button events
-    const bindTouch = (id, dir) => {
-      const el = document.getElementById(id);
-      el.addEventListener('touchstart', (e) => { e.preventDefault(); move[dir] = true; });
-      el.addEventListener('touchend', (e) => { e.preventDefault(); move[dir] = false; });
-      el.addEventListener('mousedown', () => { move[dir] = true; });
-      el.addEventListener('mouseup', () => { move[dir] = false; });
-    };
-    bindTouch('btn-up', 'forward');
-    bindTouch('btn-down', 'backward');
-    bindTouch('btn-left', 'left');
-    bindTouch('btn-right', 'right');
 
-    // --- 5. Game Engine State ---
-    class GameWorld {
-      constructor() {
-        this.year = 2008;
-        this.month = 0;
-        this.months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-        this.cash = 1200;
-        this.debt = 2500;
-        this.energy = 100;
-        this.btc = 0;
-        this.activeZone = null;
-        this.updateHUD();
-      }
+        <!-- PLAYER CONDITION -->
+        <div class="condition">
 
-      getBTCPrice() {
-        if (this.year < 2010) return 0.00;
-        if (this.year === 2010) return 0.004;
-        if (this.year <= 2012) return 12;
-        if (this.year <= 2016) return 450;
-        if (this.year <= 2018) return 15000;
-        if (this.year <= 2020) return 9000;
-        return 55000;
-      }
+            <div>
+                <span>❤️ HEALTH</span>
+                <div class="bar">
+                    <div id="healthBar" class="bar-fill health"></div>
+                </div>
+                <strong id="health">100</strong>
+            </div>
 
-      updateHUD() {
-        document.getElementById('hud-date').innerText = `${this.months[this.month]} ${this.year}`;
-        document.getElementById('hud-cash').innerText = `$${Math.round(this.cash).toLocaleString()}`;
-        document.getElementById('hud-debt').innerText = `$${Math.round(this.debt).toLocaleString()}`;
-        document.getElementById('hud-energy').innerText = `${this.energy}%`;
-        document.getElementById('hud-btc').innerText = `${this.btc.toFixed(2)} BTC`;
-      }
+            <div>
+                <span>😰 STRESS</span>
+                <div class="bar">
+                    <div id="stressBar" class="bar-fill stress"></div>
+                </div>
+                <strong id="stress">10</strong>
+            </div>
 
-      triggerInteraction() {
-        if (!this.activeZone) return;
-        const dlg = document.getElementById('dialog');
-        const title = document.getElementById('dlg-title');
-        const desc = document.getElementById('dlg-desc');
-        const actions = document.getElementById('dlg-actions');
-        actions.innerHTML = "";
+        </div>
 
-        if (this.activeZone.name === "Office") {
-          title.innerText = "💼 Corporate Office";
-          desc.innerText = "Work an intense shift to earn fiat salary.";
-          actions.innerHTML = `<button class="dialog-btn" onclick="world.workShift()">Work Shift (+$400, -25% Energy)</button>`;
-        } else if (this.activeZone.name === "Apartment") {
-          title.innerText = "🏠 Your Apartment";
-          desc.innerText = "Sleep and advance to the next month. Rent ($600) and interest will be deducted.";
-          actions.innerHTML = `<button class="dialog-btn" onclick="world.sleepMonth()">Sleep & End Month</button>`;
-        } else if (this.activeZone.name === "Bank") {
-          title.innerText = "🏦 City Bank";
-          desc.innerText = "Pay down high-interest credit card debt or take emergency loans.";
-          actions.innerHTML = `
-            <button class="dialog-btn" onclick="world.payDebt(300)">Pay $300 Debt Principal</button>
-            <button class="dialog-btn" onclick="world.takeLoan(1000)">Take $1,000 Emergency Loan</button>
-          `;
-        } else if (this.activeZone.name === "Market") {
-          const price = this.getBTCPrice();
-          title.innerText = "🛒 Market & Exchange";
-          desc.innerText = `Buy groceries or buy Bitcoin.\nCurrent BTC Price: $${price.toLocaleString()}`;
-          actions.innerHTML = `
-            <button class="dialog-btn" onclick="world.buyFood()">Buy Groceries (-$50, +35% Energy)</button>
-            ${this.year >= 2009 ? `<button class="dialog-btn" onclick="world.buyBTC(100)">Buy $100 worth of BTC</button>` : `<p style="color:#94a3b8;">Bitcoin has not launched yet (Jan 2009).</p>`}
-          `;
-        }
-        dlg.style.display = "block";
-      }
 
-      workShift() {
-        if (this.energy < 25) { alert("Too exhausted! Go buy food or sleep."); return; }
-        this.cash += 400; this.energy -= 25;
-        this.updateHUD();
-        document.getElementById('dialog').style.display = 'none';
-      }
+        <!-- STORY -->
+        <div class="story-card">
 
-      buyFood() {
-        if (this.cash < 50) { alert("Not enough cash for food!"); return; }
-        this.cash -= 50; this.energy = Math.min(100, this.energy + 35);
-        this.updateHUD();
-        document.getElementById('dialog').style.display = 'none';
-      }
+            <div class="story-date" id="storyDate">
+                JANUARY 2019
+            </div>
 
-      payDebt(amt) {
-        if (this.cash < amt) { alert("Not enough cash!"); return; }
-        this.cash -= amt; this.debt = Math.max(0, this.debt - amt);
-        this.updateHUD();
-        document.getElementById('dialog').style.display = 'none';
-      }
+            <h2 id="eventTitle">
+                A Normal Beginning
+            </h2>
 
-      takeLoan(amt) {
-        this.cash += amt; this.debt += amt;
-        this.updateHUD();
-        document.getElementById('dialog').style.display = 'none';
-      }
+            <p id="eventText">
+                Your salary arrives.
+                Rent is due soon.
+                Life feels predictable.
+            </p>
 
-      buyBTC(amt) {
-        const p = this.getBTCPrice();
-        if (this.cash < amt) { alert("Not enough cash!"); return; }
-        if (p <= 0) { alert("BTC not yet traded."); return; }
-        this.cash -= amt; this.btc += (amt / p);
-        this.updateHUD();
-        document.getElementById('dialog').style.display = 'none';
-      }
+        </div>
 
-      sleepMonth() {
-        this.month++;
-        if (this.month >= 12) { this.month = 0; this.year++; }
-        if (this.debt > 0) this.debt += Math.round(this.debt * 0.03);
-        this.cash -= 600;
-        if (this.cash < 0) { this.debt += Math.abs(this.cash); this.cash = 0; }
-        this.energy = 100;
-        this.updateHUD();
-        document.getElementById('dialog').style.display = 'none';
-      }
-    }
 
-    window.world = new GameWorld();
+        <!-- DECISIONS -->
+        <div id="choices" class="choices">
 
-    // --- 6. Main Game Loop with Physics & Third-Person Camera ---
-    const speed = 0.18;
-    const promptEl = document.getElementById('interact-prompt');
+            <button onclick="choose(1)">
+                Work overtime
+                <small>+₹5,000 income / +stress</small>
+            </button>
 
-    function animate() {
-      requestAnimationFrame(animate);
+            <button onclick="choose(2)">
+                Save money
+                <small>Reduce spending</small>
+            </button>
 
-      // Player Movement
-      if (move.forward) player.position.z -= speed;
-      if (move.backward) player.position.z += speed;
-      if (move.left) player.position.x -= speed;
-      if (move.right) player.position.x += speed;
+            <button onclick="choose(3)">
+                Enjoy life
+                <small>-₹3,000 / -stress</small>
+            </button>
 
-      // Restrict player inside city borders
-      player.position.x = Math.max(-25, Math.min(25, player.position.x));
-      player.position.z = Math.max(-25, Math.min(25, player.position.z));
+        </div>
 
-      // Third-person Camera Following Character
-      camera.position.x = player.position.x;
-      camera.position.y = player.position.y + 7;
-      camera.position.z = player.position.z + 10;
-      camera.lookAt(player.position.x, player.position.y + 1, player.position.z);
 
-      // Proximity Trigger for Interactive Buildings
-      let nearZone = null;
-      zones.forEach(z => {
-        const dist = Math.hypot(player.position.x - z.x, player.position.z - z.z);
-        if (dist < 4.5) nearZone = z;
-      });
+        <!-- LOG -->
+        <div class="log">
 
-      world.activeZone = nearZone;
-      if (nearZone) {
-        promptEl.style.display = "block";
-        promptEl.innerText = `ENTER ${nearZone.name.toUpperCase()}`;
-      } else {
-        promptEl.style.display = "none";
-      }
+            <div class="log-title">
+                LIFE LOG
+            </div>
 
-      renderer.render(scene, camera);
-    }
-    animate();
+            <div id="logContent">
+                Your story begins...
+            </div>
 
-    window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-  </script>
+        </div>
+
+    </section>
+
+
+    <!-- GAME OVER -->
+    <section id="endScreen" class="screen">
+
+        <div class="end-card">
+
+            <div id="endIcon">💀</div>
+
+            <h1 id="endTitle">
+                BANKRUPT
+            </h1>
+
+            <p id="endText">
+                Your money ran out.
+            </p>
+
+            <div class="final-stats">
+
+                <div>
+                    <span>Months Survived</span>
+                    <strong id="finalMonth">0</strong>
+                </div>
+
+                <div>
+                    <span>Final Cash</span>
+                    <strong id="finalCash">₹0</strong>
+                </div>
+
+                <div>
+                    <span>Final Debt</span>
+                    <strong id="finalDebt">₹0</strong>
+                </div>
+
+            </div>
+
+            <button onclick="location.reload()" class="primary-btn">
+                TRY AGAIN
+            </button>
+
+        </div>
+
+    </section>
+
+</div>
+
+
+<script src="game.js"></script>
+
 </body>
 </html>
