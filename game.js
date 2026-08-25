@@ -12,39 +12,38 @@ window.addEventListener("resize", resize);
 resize();
 
 
-/* =========================
+/* =====================================================
    PLAYER
-========================= */
+===================================================== */
 
 const player = {
-
-    x: 500,
-    y: 400,
+    x: 520,
+    y: 450,
 
     size: 18,
-
     speed: 3,
 
     cash: 40000,
+    income: 25000,
+    debt: 0,
 
     health: 100,
-
     stress: 10,
 
     month: 1,
-
     year: 2019,
 
     hour: 8,
+    minute: 0,
 
-    minute: 0
-
+    workedToday: false,
+    sleptToday: false
 };
 
 
-/* =========================
+/* =====================================================
    INPUT
-========================= */
+===================================================== */
 
 const keys = {};
 
@@ -59,52 +58,46 @@ window.addEventListener("keydown", e => {
 });
 
 window.addEventListener("keyup", e => {
-
     keys[e.key.toLowerCase()] = false;
-
 });
 
 
 function button(id, key) {
 
-    const el =
-        document.getElementById(id);
+    const el = document.getElementById(id);
 
-    el.addEventListener("touchstart",
-        e => {
-            e.preventDefault();
-            keys[key] = true;
-        });
+    el.addEventListener("touchstart", e => {
+        e.preventDefault();
+        keys[key] = true;
+    });
 
-    el.addEventListener("touchend",
-        e => {
-            e.preventDefault();
-            keys[key] = false;
-        });
+    el.addEventListener("touchend", e => {
+        e.preventDefault();
+        keys[key] = false;
+    });
 
-    el.addEventListener("mousedown",
-        () => keys[key] = true);
+    el.addEventListener("mousedown", () => {
+        keys[key] = true;
+    });
 
-    el.addEventListener("mouseup",
-        () => keys[key] = false);
-
+    el.addEventListener("mouseup", () => {
+        keys[key] = false;
+    });
 }
-
 
 button("up", "w");
 button("down", "s");
 button("left", "a");
 button("right", "d");
 
-
 document
     .getElementById("interact")
     .addEventListener("click", interact);
 
 
-/* =========================
+/* =====================================================
    WORLD
-========================= */
+===================================================== */
 
 const buildings = [
 
@@ -114,7 +107,6 @@ const buildings = [
         y: 180,
         w: 230,
         h: 150,
-        color: "#333",
         type: "home"
     },
 
@@ -124,7 +116,6 @@ const buildings = [
         y: 150,
         w: 250,
         h: 180,
-        color: "#292929",
         type: "work"
     },
 
@@ -134,7 +125,6 @@ const buildings = [
         y: 570,
         w: 260,
         h: 150,
-        color: "#303030",
         type: "shop"
     },
 
@@ -144,60 +134,181 @@ const buildings = [
         y: 570,
         w: 250,
         h: 150,
-        color: "#252525",
         type: "bank"
+    },
+
+    {
+        name: "BUS STOP",
+        x: 420,
+        y: 650,
+        w: 130,
+        h: 70,
+        type: "bus"
     }
 
 ];
 
 
-/* =========================
-   CAMERA
-========================= */
+/* =====================================================
+   NPCs
+===================================================== */
 
-let camera = {
+const npcs = [
+
+    {
+        x: 470,
+        y: 350,
+        name: "Neighbour",
+        speed: 0.5,
+        direction: 1
+    },
+
+    {
+        x: 580,
+        y: 520,
+        name: "Worker",
+        speed: 0.7,
+        direction: -1
+    },
+
+    {
+        x: 390,
+        y: 450,
+        name: "Shopper",
+        speed: 0.4,
+        direction: 1
+    },
+
+    {
+        x: 600,
+        y: 300,
+        name: "Office Worker",
+        speed: 0.6,
+        direction: -1
+    }
+
+];
+
+
+/* =====================================================
+   CAMERA
+===================================================== */
+
+const camera = {
     x: 0,
     y: 0
 };
 
 
-/* =========================
-   DRAW
-========================= */
+/* =====================================================
+   COLLISION
+===================================================== */
 
-function draw() {
+function collides(x, y) {
 
-    ctx.clearRect(
-        0,
-        0,
-        W,
-        H
-    );
+    const half = player.size / 2;
+
+    for (const b of buildings) {
+
+        if (
+            x + half > b.x &&
+            x - half < b.x + b.w &&
+            y + half > b.y &&
+            y - half < b.y + b.h
+        ) {
+            return true;
+        }
+
+    }
+
+    return false;
+}
 
 
-    camera.x =
-        player.x - W / 2;
+/* =====================================================
+   PLAYER MOVEMENT
+===================================================== */
 
-    camera.y =
-        player.y - H / 2;
+function updatePlayer() {
+
+    let dx = 0;
+    let dy = 0;
+
+    if (keys["w"] || keys["arrowup"])
+        dy -= 1;
+
+    if (keys["s"] || keys["arrowdown"])
+        dy += 1;
+
+    if (keys["a"] || keys["arrowleft"])
+        dx -= 1;
+
+    if (keys["d"] || keys["arrowright"])
+        dx += 1;
 
 
-    drawWorld();
+    if (dx || dy) {
 
-    drawBuildings();
+        const length =
+            Math.sqrt(dx * dx + dy * dy);
 
-    drawPlayer();
+        dx /= length;
+        dy /= length;
+
+
+        const newX =
+            player.x + dx * player.speed;
+
+        const newY =
+            player.y + dy * player.speed;
+
+
+        if (!collides(newX, player.y)) {
+            player.x = newX;
+        }
+
+        if (!collides(player.x, newY)) {
+            player.y = newY;
+        }
+
+    }
 
 }
 
 
-/* =========================
-   WORLD
-========================= */
+/* =====================================================
+   NPC MOVEMENT
+===================================================== */
+
+function updateNPCs() {
+
+    npcs.forEach(npc => {
+
+        npc.x +=
+            npc.speed * npc.direction;
+
+
+        if (npc.x < 350) {
+            npc.direction = 1;
+        }
+
+
+        if (npc.x > 620) {
+            npc.direction = -1;
+        }
+
+    });
+
+}
+
+
+/* =====================================================
+   DRAW WORLD
+===================================================== */
 
 function drawWorld() {
 
-    ctx.fillStyle = "#111";
+    ctx.fillStyle = "#101010";
 
     ctx.fillRect(
         0,
@@ -207,25 +318,47 @@ function drawWorld() {
     );
 
 
-    /*
-       ROAD GRID
-    */
+    /* Roads */
 
-    ctx.strokeStyle = "#1b1b1b";
+    ctx.fillStyle = "#181818";
 
+    ctx.fillRect(
+        0 - camera.x,
+        360 - camera.y,
+        1200,
+        120
+    );
+
+    ctx.fillRect(
+        360 - camera.x,
+        0 - camera.y,
+        120,
+        900
+    );
+
+
+    /* Road markings */
+
+    ctx.strokeStyle = "#292929";
     ctx.lineWidth = 2;
 
-
     for (
-        let x = -camera.x % 80;
-        x < W;
-        x += 80
+        let x = 0;
+        x < 1200;
+        x += 70
     ) {
 
         ctx.beginPath();
 
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, H);
+        ctx.moveTo(
+            x - camera.x,
+            420 - camera.y
+        );
+
+        ctx.lineTo(
+            x + 35 - camera.x,
+            420 - camera.y
+        );
 
         ctx.stroke();
 
@@ -233,15 +366,22 @@ function drawWorld() {
 
 
     for (
-        let y = -camera.y % 80;
-        y < H;
-        y += 80
+        let y = 0;
+        y < 900;
+        y += 70
     ) {
 
         ctx.beginPath();
 
-        ctx.moveTo(0, y);
-        ctx.lineTo(W, y);
+        ctx.moveTo(
+            420 - camera.x,
+            y - camera.y
+        );
+
+        ctx.lineTo(
+            420 - camera.x,
+            y + 35 - camera.y
+        );
 
         ctx.stroke();
 
@@ -250,23 +390,19 @@ function drawWorld() {
 }
 
 
-/* =========================
-   BUILDINGS
-========================= */
+/* =====================================================
+   DRAW BUILDINGS
+===================================================== */
 
 function drawBuildings() {
 
     buildings.forEach(b => {
 
-        const x =
-            b.x - camera.x;
-
-        const y =
-            b.y - camera.y;
+        const x = b.x - camera.x;
+        const y = b.y - camera.y;
 
 
-        ctx.fillStyle =
-            b.color;
+        ctx.fillStyle = "#292929";
 
         ctx.fillRect(
             x,
@@ -276,8 +412,7 @@ function drawBuildings() {
         );
 
 
-        ctx.strokeStyle =
-            "#555";
+        ctx.strokeStyle = "#505050";
 
         ctx.strokeRect(
             x,
@@ -287,15 +422,11 @@ function drawBuildings() {
         );
 
 
-        ctx.fillStyle =
-            "#aaa";
+        ctx.fillStyle = "#eeeeee";
 
-        ctx.font =
-            "bold 14px Arial";
+        ctx.font = "bold 13px Arial";
 
-        ctx.textAlign =
-            "center";
-
+        ctx.textAlign = "center";
 
         ctx.fillText(
             b.name,
@@ -304,17 +435,90 @@ function drawBuildings() {
         );
 
 
-        ctx.textAlign =
-            "left";
+        ctx.textAlign = "left";
+
+
+        /* windows */
+
+        if (
+            b.type !== "bus"
+        ) {
+
+            ctx.fillStyle = "#151515";
+
+            for (
+                let wx = x + 25;
+                wx < x + b.w - 15;
+                wx += 45
+            ) {
+
+                ctx.fillRect(
+                    wx,
+                    y + 25,
+                    18,
+                    18
+                );
+
+            }
+
+        }
 
     });
 
 }
 
 
-/* =========================
-   PLAYER
-========================= */
+/* =====================================================
+   DRAW NPCs
+===================================================== */
+
+function drawNPCs() {
+
+    npcs.forEach(npc => {
+
+        const x =
+            npc.x - camera.x;
+
+        const y =
+            npc.y - camera.y;
+
+
+        /* body */
+
+        ctx.fillStyle = "#777";
+
+        ctx.fillRect(
+            x - 7,
+            y - 5,
+            14,
+            18
+        );
+
+
+        /* head */
+
+        ctx.fillStyle = "#aaa";
+
+        ctx.beginPath();
+
+        ctx.arc(
+            x,
+            y - 11,
+            7,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fill();
+
+    });
+
+}
+
+
+/* =====================================================
+   DRAW PLAYER
+===================================================== */
 
 function drawPlayer() {
 
@@ -375,69 +579,24 @@ function drawPlayer() {
 
     ctx.fill();
 
-}
 
+    /* direction marker */
 
-/* =========================
-   MOVEMENT
-========================= */
+    ctx.fillStyle = "#fff";
 
-function updatePlayer() {
-
-    let dx = 0;
-    let dy = 0;
-
-
-    if (
-        keys["w"] ||
-        keys["arrowup"]
-    ) dy -= 1;
-
-
-    if (
-        keys["s"] ||
-        keys["arrowdown"]
-    ) dy += 1;
-
-
-    if (
-        keys["a"] ||
-        keys["arrowleft"]
-    ) dx -= 1;
-
-
-    if (
-        keys["d"] ||
-        keys["arrowright"]
-    ) dx += 1;
-
-
-    if (dx || dy) {
-
-        const length =
-            Math.sqrt(
-                dx * dx +
-                dy * dy
-            );
-
-        dx /= length;
-        dy /= length;
-
-
-        player.x +=
-            dx * player.speed;
-
-        player.y +=
-            dy * player.speed;
-
-    }
+    ctx.fillRect(
+        x + 5,
+        y - 15,
+        4,
+        3
+    );
 
 }
 
 
-/* =========================
+/* =====================================================
    TIME
-========================= */
+===================================================== */
 
 let lastTime = Date.now();
 
@@ -449,6 +608,10 @@ function updateTime() {
         return;
 
     lastTime = now;
+
+
+    /* 10 minutes of game time
+       = 1 real second */
 
     player.minute += 10;
 
@@ -466,7 +629,7 @@ function updateTime() {
 
         player.hour = 0;
 
-        nextDay();
+        newDay();
 
     }
 
@@ -476,20 +639,60 @@ function updateTime() {
 }
 
 
-function nextDay() {
+/* =====================================================
+   NEW DAY
+===================================================== */
 
-    /*
-       Later this becomes
-       the complete daily
-       economic simulation.
-    */
+function newDay() {
+
+    player.workedToday = false;
+    player.sleptToday = false;
+
+
+    /* Daily food cost */
+
+    player.cash -= 180;
+
+
+    if (player.cash < 0) {
+
+        player.debt +=
+            Math.abs(player.cash);
+
+        player.cash = 0;
+
+        player.stress += 5;
+
+    }
+
+
+    /* Stress affects health */
+
+    if (player.stress > 70) {
+
+        player.health -= 2;
+
+    }
+
+
+    /* Monthly reset */
+
+    if (
+        player.month === 12 &&
+        player.hour === 0
+    ) {
+
+        player.month = 1;
+        player.year++;
+
+    }
 
 }
 
 
-/* =========================
+/* =====================================================
    INTERACTION
-========================= */
+===================================================== */
 
 let nearbyBuilding = null;
 
@@ -515,7 +718,7 @@ function checkNearby() {
             );
 
 
-        if (distance < 150) {
+        if (distance < 140) {
 
             nearbyBuilding = b;
 
@@ -532,8 +735,8 @@ function checkNearby() {
 
     if (nearbyBuilding) {
 
-        box.style.display =
-            "block";
+        box.style.display = "block";
+
 
         document
             .getElementById(
@@ -544,13 +747,16 @@ function checkNearby() {
 
     } else {
 
-        box.style.display =
-            "none";
+        box.style.display = "none";
 
     }
 
 }
 
+
+/* =====================================================
+   INTERACT
+===================================================== */
 
 function interact() {
 
@@ -564,70 +770,35 @@ function interact() {
 
         case "home":
 
-            message(
-                "You are home. Rest restores health."
-            );
-
-            player.health =
-                Math.min(
-                    100,
-                    player.health + 5
-                );
-
-            player.stress =
-                Math.max(
-                    0,
-                    player.stress - 5
-                );
+            sleep();
 
             break;
 
 
         case "work":
 
-            message(
-                "You worked today. +₹1,000"
-            );
-
-            player.cash += 1000;
-
-            player.stress += 3;
+            work();
 
             break;
 
 
         case "shop":
 
-            if (player.cash >= 500) {
-
-                player.cash -= 500;
-
-                message(
-                    "You bought groceries. -₹500"
-                );
-
-                player.health =
-                    Math.min(
-                        100,
-                        player.health + 3
-                    );
-
-            } else {
-
-                message(
-                    "You don't have enough money."
-                );
-
-            }
+            shop();
 
             break;
 
 
         case "bank":
 
-            message(
-                "The bank is where your debt begins..."
-            );
+            bank();
+
+            break;
+
+
+        case "bus":
+
+            bus();
 
             break;
 
@@ -639,42 +810,241 @@ function interact() {
 }
 
 
-/* =========================
-   MESSAGE
-========================= */
+/* =====================================================
+   HOME
+===================================================== */
 
-let messageTimer;
+function sleep() {
 
+    if (
+        player.hour < 20 &&
+        player.hour > 6
+    ) {
 
-function message(text) {
-
-    const el =
-        document.getElementById(
-            "message"
+        message(
+            "It's too early to sleep."
         );
 
-    el.innerText =
-        text;
+        return;
 
-    el.classList.add("show");
-
-
-    clearTimeout(messageTimer);
+    }
 
 
-    messageTimer =
-        setTimeout(
-            () =>
-                el.classList.remove("show"),
-            2500
+    player.hour = 7;
+    player.minute = 0;
+
+    player.health =
+        Math.min(
+            100,
+            player.health + 20
+        );
+
+    player.stress =
+        Math.max(
+            0,
+            player.stress - 20
+        );
+
+    player.sleptToday = true;
+
+
+    message(
+        "You slept. Health restored."
+    );
+
+}
+
+
+/* =====================================================
+   WORK
+===================================================== */
+
+function work() {
+
+    if (
+        player.hour < 9 ||
+        player.hour >= 18
+    ) {
+
+        message(
+            "The office is closed."
+        );
+
+        return;
+
+    }
+
+
+    if (player.workedToday) {
+
+        message(
+            "You've already worked today."
+        );
+
+        return;
+
+    }
+
+
+    player.cash +=
+        Math.round(
+            player.income / 22
+        );
+
+
+    player.stress += 4;
+
+    player.health -= 1;
+
+    player.workedToday = true;
+
+
+    message(
+        "You worked today. Money earned."
+    );
+
+}
+
+
+/* =====================================================
+   SHOP
+===================================================== */
+
+function shop() {
+
+    if (player.cash < 500) {
+
+        message(
+            "You don't have enough money."
+        );
+
+        return;
+
+    }
+
+
+    player.cash -= 500;
+
+    player.health =
+        Math.min(
+            100,
+            player.health + 5
+        );
+
+    player.stress =
+        Math.max(
+            0,
+            player.stress - 2
+        );
+
+
+    message(
+        "Groceries bought. -₹500"
+    );
+
+}
+
+
+/* =====================================================
+   BANK
+===================================================== */
+
+function bank() {
+
+    if (player.debt > 0) {
+
+        message(
+            `Current debt: ₹${player.debt.toLocaleString("en-IN")}`
+        );
+
+        return;
+
+    }
+
+
+    player.cash += 10000;
+
+    player.debt += 10000;
+
+    player.stress += 8;
+
+
+    message(
+        "You borrowed ₹10,000."
+    );
+
+}
+
+
+/* =====================================================
+   BUS
+===================================================== */
+
+function bus() {
+
+    player.stress =
+        Math.max(
+            0,
+            player.stress - 2
+        );
+
+
+    message(
+        "You took the bus. Transport cost ₹100."
+    );
+
+
+    if (player.cash >= 100) {
+
+        player.cash -= 100;
+
+    } else {
+
+        player.debt += 100;
+
+    }
+
+}
+
+
+/* =====================================================
+   CAMERA
+===================================================== */
+
+function updateCamera() {
+
+    camera.x =
+        player.x - W / 2;
+
+    camera.y =
+        player.y - H / 2;
+
+
+    camera.x =
+        Math.max(
+            0,
+            Math.min(
+                camera.x,
+                1200 - W
+            )
+        );
+
+
+    camera.y =
+        Math.max(
+            0,
+            Math.min(
+                camera.y,
+                900 - H
+            )
         );
 
 }
 
 
-/* =========================
+/* =====================================================
    HUD
-========================= */
+===================================================== */
 
 function updateHUD() {
 
@@ -705,43 +1075,141 @@ function updateHUD() {
     document
         .getElementById("time")
         .innerText =
-        `${String(player.hour).padStart(2,"0")}:${String(player.minute).padStart(2,"0")}`;
+        `${String(player.hour).padStart(2, "0")}:${String(player.minute).padStart(2, "0")}`;
 
 
     document
         .getElementById("cash")
         .innerText =
         "₹" +
-        player.cash.toLocaleString("en-IN");
+        Math.max(
+            0,
+            player.cash
+        ).toLocaleString("en-IN");
 
 
     document
         .getElementById("health")
         .innerText =
-        player.health;
+        Math.max(
+            0,
+            player.health
+        );
 
 
     document
         .getElementById("stress")
         .innerText =
-        player.stress;
+        Math.min(
+            100,
+            player.stress
+        );
 
 }
 
 
-/* =========================
+/* =====================================================
+   MESSAGE
+===================================================== */
+
+let messageTimer;
+
+function message(text) {
+
+    const el =
+        document.getElementById(
+            "message"
+        );
+
+    el.innerText = text;
+
+    el.classList.add("show");
+
+
+    clearTimeout(messageTimer);
+
+
+    messageTimer =
+        setTimeout(() => {
+
+            el.classList.remove("show");
+
+        }, 2500);
+
+}
+
+
+/* =====================================================
+   DAY / NIGHT
+===================================================== */
+
+function drawNight() {
+
+    let alpha = 0;
+
+
+    if (
+        player.hour >= 20 ||
+        player.hour < 6
+    ) {
+
+        alpha = 0.45;
+
+    }
+
+    else if (
+        player.hour >= 18
+    ) {
+
+        alpha = 0.25;
+
+    }
+
+
+    if (alpha > 0) {
+
+        ctx.fillStyle =
+            `rgba(0,0,20,${alpha})`;
+
+        ctx.fillRect(
+            0,
+            0,
+            W,
+            H
+        );
+
+    }
+
+}
+
+
+/* =====================================================
    GAME LOOP
-========================= */
+===================================================== */
 
 function loop() {
 
     updatePlayer();
 
-    checkNearby();
+    updateNPCs();
 
     updateTime();
 
-    draw();
+    checkNearby();
+
+    updateCamera();
+
+
+    drawWorld();
+
+    drawBuildings();
+
+    drawNPCs();
+
+    drawPlayer();
+
+    drawNight();
+
 
     requestAnimationFrame(loop);
 
