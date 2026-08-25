@@ -706,7 +706,43 @@ document.addEventListener("keydown",function(e){
     }
 
 });
+function interact(){
 
+    if(x > 1500 && x < 1900){
+
+        message.innerHTML =
+            "📄 APPLICATION SUBMITTED<br><br>" +
+            "Your first job starts tomorrow.";
+
+        message.style.display = "block";
+
+        setTimeout(function(){
+
+            message.innerHTML =
+                "⚠️ But something is wrong...<br><br>" +
+                "The cost of living has increased.";
+
+        },2500);
+
+    }
+
+}
+
+document.getElementById("interact")
+.addEventListener("touchstart",function(e){
+
+    e.preventDefault();
+
+    interact();
+
+});
+
+document.getElementById("interact")
+.addEventListener("click",function(){
+
+    interact();
+
+});
 </script>
 
 </body>
