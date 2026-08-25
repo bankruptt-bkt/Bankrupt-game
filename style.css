@@ -1,1326 +1,190 @@
-/* =====================================================
-   BANKRUPT V3
-   ECONOMIC SURVIVAL ENGINE
-===================================================== */
-
-
-const player = {
-
-    month: 1,
-    year: 2019,
-
-    cash: 40000,
-
-    income: 25000,
-
-    debt: 0,
-
-    inflation: 4,
-
-    health: 100,
-
-    stress: 10,
-
-    jobSecurity: 90,
-
-    rent: 7000,
-
-    food: 5000,
-
-    transport: 2500
-
-};
-
-
-/* =====================================================
-   STARTING STORY
-===================================================== */
-
-const story = [
-
-    {
-        year: 2019,
-        month: 1,
-
-        title: "The Safety Net",
-
-        text:
-        "Your parents tell you to keep an emergency fund. You wonder if keeping cash is really the safest choice.",
-
-        choices: [
-
-            {
-                name: "Build savings",
-                description: "+₹3,000 savings",
-                money: 3000,
-                health: 0,
-                stress: -2
-            },
-
-            {
-                name: "Help your family",
-                description: "-₹3,000 / lower stress",
-                money: -3000,
-                health: 0,
-                stress: -8
-            },
-
-            {
-                name: "Take financial risk",
-                description: "+₹6,000 potential gain / stress",
-                money: 6000,
-                health: 0,
-                stress: 10
-            }
-
-        ]
-    },
-
-
-    {
-        year: 2019,
-        month: 2,
-
-        title: "The First Raise",
-
-        text:
-        "Your manager notices your work. You can ask for more money, but asking comes with risk.",
-
-        choices: [
-
-            {
-                name: "Ask for a raise",
-                description: "+₹3,000 monthly income",
-                money: 0,
-                income: 3000,
-                health: 0,
-                stress: 8
-            },
-
-            {
-                name: "Stay quiet",
-                description: "Keep your job comfortable",
-                money: 1000,
-                health: 0,
-                stress: -3
-            },
-
-            {
-                name: "Find another job",
-                description: "Risk now for higher income",
-                money: -1000,
-                income: 5000,
-                health: 0,
-                stress: 12
-            }
-
-        ]
-    },
-
-
-    {
-        year: 2019,
-        month: 3,
-
-        title: "A Normal Expense",
-
-        text:
-        "Your phone breaks unexpectedly. It isn't a disaster, but it reminds you how quickly savings can disappear.",
-
-        choices: [
-
-            {
-                name: "Buy a new phone",
-                description: "-₹12,000",
-                money: -12000,
-                health: 0,
-                stress: -5
-            },
-
-            {
-                name: "Repair the old one",
-                description: "-₹3,000",
-                money: -3000,
-                health: 0,
-                stress: 2
-            },
-
-            {
-                name: "Borrow money",
-                description: "+₹12,000 debt",
-                money: 12000,
-                debt: 12000,
-                health: 0,
-                stress: 10
-            }
-
-        ]
-    },
-
-
-    {
-        year: 2019,
-        month: 4,
-
-        title: "More Money, More Spending",
-
-        text:
-        "Your salary has improved. Naturally, your lifestyle starts improving too.",
-
-        choices: [
-
-            {
-                name: "Upgrade your lifestyle",
-                description: "-₹5,000 / happiness",
-                money: -5000,
-                health: 5,
-                stress: -10
-            },
-
-            {
-                name: "Keep living simply",
-                description: "+₹3,000 savings",
-                money: 3000,
-                health: 0,
-                stress: 0
-            },
-
-            {
-                name: "Invest the difference",
-                description: "-₹3,000 / build financial knowledge",
-                money: -3000,
-                health: 0,
-                stress: 5
-            }
-
-        ]
-    },
-
-
-    /* 2020 */
-
-    {
-        year: 2020,
-        month: 3,
-
-        title: "The World Stops",
-
-        text:
-        "Businesses close. Streets become empty. Nobody knows how long it will last.",
-
-        choices: [
-
-            {
-                name: "Protect your savings",
-                description: "Preserve cash",
-                money: 0,
-                health: 5,
-                stress: 5
-            },
-
-            {
-                name: "Take whatever work exists",
-                description: "+₹4,000 / health -5",
-                money: 4000,
-                health: -5,
-                stress: 10
-            },
-
-            {
-                name: "Use your emergency fund",
-                description: "-₹8,000 / lower stress",
-                money: -8000,
-                health: 5,
-                stress: -10
-            }
-
-        ]
-    },
-
-
-    {
-        year: 2020,
-        month: 6,
-
-        title: "Salary Cut",
-
-        text:
-        "Your company survives, but your salary doesn't. You are told to accept a temporary reduction.",
-
-        choices: [
-
-            {
-                name: "Accept the cut",
-                description: "Income -₹4,000",
-                income: -4000,
-                money: 0,
-                health: 0,
-                stress: 10
-            },
-
-            {
-                name: "Look for another job",
-                description: "Risk your job security",
-                income: 3000,
-                money: -2000,
-                health: 0,
-                stress: 15
-            },
-
-            {
-                name: "Start freelancing",
-                description: "+₹5,000 / high stress",
-                income: 5000,
-                money: 0,
-                health: -5,
-                stress: 15
-            }
-
-        ]
-    },
-
-
-    /* 2021 */
-
-    {
-        year: 2021,
-        month: 4,
-
-        title: "The Recovery",
-
-        text:
-        "The economy begins reopening. People are spending again. Your friends are optimistic.",
-
-        choices: [
-
-            {
-                name: "Work overtime",
-                description: "+₹5,000 / stress",
-                money: 5000,
-                health: -3,
-                stress: 10
-            },
-
-            {
-                name: "Save the recovery money",
-                description: "+₹4,000",
-                money: 4000,
-                health: 0,
-                stress: 0
-            },
-
-            {
-                name: "Enjoy the recovery",
-                description: "-₹5,000 / lower stress",
-                money: -5000,
-                health: 5,
-                stress: -12
-            }
-
-        ]
-    },
-
-
-    {
-        year: 2021,
-        month: 8,
-
-        title: "Everyone Is Getting Rich",
-
-        text:
-        "People around you are talking about investments and rapidly rising asset prices. You feel like you're missing out.",
-
-        choices: [
-
-            {
-                name: "Ignore the hype",
-                description: "Protect your money",
-                money: 0,
-                health: 0,
-                stress: -3
-            },
-
-            {
-                name: "Invest carefully",
-                description: "-₹5,000",
-                money: -5000,
-                health: 0,
-                stress: 5
-            },
-
-            {
-                name: "Go all in",
-                description: "-₹15,000 / high risk",
-                money: -15000,
-                health: -3,
-                stress: 20
-            }
-
-        ]
-    },
-
-
-    /* 2022 */
-
-    {
-        year: 2022,
-        month: 2,
-
-        title: "The Inflation Shock",
-
-        text:
-        "Fuel, food and rent are becoming noticeably more expensive. Your salary hasn't kept up.",
-
-        choices: [
-
-            {
-                name: "Cut your lifestyle",
-                description: "Save money / stress",
-                money: 3000,
-                health: -5,
-                stress: 8
-            },
-
-            {
-                name: "Ask for a raise",
-                description: "Try to protect your purchasing power",
-                money: 1000,
-                income: 3000,
-                health: 0,
-                stress: 12
-            },
-
-            {
-                name: "Borrow to maintain your lifestyle",
-                description: "+₹8,000 debt",
-                money: 8000,
-                debt: 8000,
-                health: 0,
-                stress: 15
-            }
-
-        ]
-    },
-
-
-    {
-        year: 2022,
-        month: 7,
-
-        title: "The Debt Trap",
-
-        text:
-        "Interest rates rise. Your debt is suddenly much more expensive than you expected.",
-
-        choices: [
-
-            {
-                name: "Pay down debt",
-                description: "-₹7,000",
-                money: -7000,
-                debtReduction: 7000,
-                health: 0,
-                stress: -5
-            },
-
-            {
-                name: "Pay the minimum",
-                description: "Protect your cash",
-                money: -2000,
-                health: 0,
-                stress: 5
-            },
-
-            {
-                name: "Borrow again",
-                description: "+₹5,000 debt",
-                money: 5000,
-                debt: 5000,
-                health: 0,
-                stress: 15
-            }
-
-        ]
-    },
-
-
-    /* 2023 */
-
-    {
-        year: 2023,
-        month: 3,
-
-        title: "The Second Job",
-
-        text:
-        "Your main salary isn't enough anymore. A friend offers you night work.",
-
-        choices: [
-
-            {
-                name: "Take the second job",
-                description: "+₹8,000 / health & stress",
-                money: 8000,
-                health: -10,
-                stress: 20
-            },
-
-            {
-                name: "Protect your health",
-                description: "No extra income",
-                money: 0,
-                health: 5,
-                stress: -5
-            },
-
-            {
-                name: "Build a side business",
-                description: "+₹4,000 / risky",
-                money: 4000,
-                health: -5,
-                stress: 12
-            }
-
-        ]
-    },
-
-
-    /* 2024 */
-
-    {
-        year: 2024,
-        month: 5,
-
-        title: "What Is Money?",
-
-        text:
-        "After years of watching prices change, you start asking a different question: what actually gives money its value?",
-
-        choices: [
-
-            {
-                name: "Ignore the question",
-                description: "Keep working",
-                money: 2000,
-                health: 0,
-                stress: 0
-            },
-
-            {
-                name: "Study monetary history",
-                description: "Gain knowledge",
-                money: -500,
-                knowledge: 5,
-                health: 0,
-                stress: -5
-            },
-
-            {
-                name: "Study alternative money",
-                description: "Gain knowledge",
-                money: -500,
-                knowledge: 10,
-                health: 0,
-                stress: -5
-            }
-
-        ]
-    },
-
-
-    /* 2025 */
-
-    {
-        year: 2025,
-        month: 2,
-
-        title: "The Other Side",
-
-        text:
-        "You discover the history of Bitcoin, the 2008 financial crisis, and the idea of money operating without a central authority.",
-
-        choices: [
-
-            {
-                name: "Study Bitcoin",
-                description: "Gain major knowledge",
-                money: -500,
-                knowledge: 20,
-                health: 0,
-                stress: -5
-            },
-
-            {
-                name: "Dismiss it",
-                description: "Stay with the familiar",
-                money: 0,
-                health: 0,
-                stress: 0
-            },
-
-            {
-                name: "Research monetary systems",
-                description: "Understand the bigger picture",
-                money: -1000,
-                knowledge: 15,
-                health: 0,
-                stress: -8
-            }
-
-        ]
-    },
-
-
-    {
-        year: 2025,
-        month: 8,
-
-        title: "The Choice",
-
-        text:
-        "You finally understand something: surviving isn't just about earning more. It's about understanding the system you're living inside.",
-
-        choices: [
-
-            {
-                name: "Keep learning",
-                description: "Knowledge becomes your advantage",
-                money: 0,
-                knowledge: 10,
-                health: 5,
-                stress: -10
-            },
-
-            {
-                name: "Focus only on money",
-                description: "+₹5,000",
-                money: 5000,
-                health: 0,
-                stress: 10
-            },
-
-            {
-                name: "Build your own path",
-                description: "-₹2,000 / major knowledge",
-                money: -2000,
-                knowledge: 20,
-                health: 0,
-                stress: -5
-            }
-
-        ]
-    }
-
-];
-
-
-/* =====================================================
-   START GAME
-===================================================== */
-
-function startGame() {
-
-    document
-        .getElementById("introScreen")
-        .classList.remove("active");
-
-    document
-        .getElementById("gameScreen")
-        .classList.add("active");
-
-    beginMonth();
-
+* {
+    box-sizing: border-box;
+    user-select: none;
+}
+
+body {
+    margin: 0;
+    overflow: hidden;
+    background: #050505;
+    font-family: Arial, sans-serif;
+}
+
+#game {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+}
+
+canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: #111;
 }
 
 
-/* =====================================================
-   BEGIN MONTH
-===================================================== */
+/* HUD */
 
-function beginMonth() {
+#hud {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
 
-    updateInflation();
+    padding: 14px;
 
-    const finance = calculateFinances();
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 
-    player.cash += finance.balance;
+    background: rgba(0,0,0,.75);
 
-    updateUI(finance);
+    color: white;
+}
 
-    showStory();
+.brand {
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: 3px;
+}
 
-    checkGameState();
+.brand small {
+    display: block;
 
+    margin-top: 3px;
+
+    font-size: 7px;
+    letter-spacing: 2px;
+
+    color: #777;
+}
+
+.date {
+    text-align: center;
+}
+
+.date b {
+    display: block;
+    font-size: 12px;
+}
+
+.date span {
+    color: #888;
+    font-size: 10px;
+}
+
+.stats {
+    display: flex;
+    gap: 12px;
+
+    font-size: 11px;
 }
 
 
-/* =====================================================
-   INFLATION
-===================================================== */
+/* MESSAGE */
 
-function updateInflation() {
+#message {
+    position: absolute;
 
-    if (player.year === 2019) {
-        player.inflation = 4 + Math.random();
-    }
+    left: 50%;
+    bottom: 90px;
 
-    else if (player.year === 2020) {
-        player.inflation = 4.5 + Math.random();
-    }
+    transform: translateX(-50%);
 
-    else if (player.year === 2021) {
-        player.inflation = 5 + Math.random();
-    }
+    padding: 10px 15px;
 
-    else if (player.year === 2022) {
-        player.inflation = 7 + Math.random() * 2;
-    }
+    background: rgba(0,0,0,.8);
 
-    else if (player.year === 2023) {
-        player.inflation = 6 + Math.random();
-    }
+    border: 1px solid #444;
 
-    else {
-        player.inflation = 4 + Math.random();
-    }
+    color: white;
 
+    font-size: 12px;
+
+    opacity: 0;
+
+    transition: .2s;
+}
+
+#message.show {
+    opacity: 1;
 }
 
 
-/* =====================================================
-   FINANCES
-===================================================== */
+/* INTERACTION */
 
-function calculateFinances() {
+#interaction {
+    position: absolute;
 
-    const multiplier =
-        1 + player.inflation / 100;
+    left: 50%;
+    top: 75px;
 
+    transform: translateX(-50%);
 
-    const rent =
-        Math.round(
-            player.rent * multiplier
-        );
+    display: none;
+}
 
+#interactionText {
+    padding: 8px 15px;
 
-    const food =
-        Math.round(
-            player.food * multiplier
-        );
+    background: rgba(0,0,0,.85);
 
+    border: 1px solid #555;
 
-    const transport =
-        Math.round(
-            player.transport * multiplier
-        );
+    color: white;
 
-
-    let interest = 0;
-
-
-    if (player.debt > 0) {
-
-        interest =
-            Math.round(
-                player.debt * 0.025
-            );
-
-        player.debt += interest;
-
-    }
-
-
-    const totalExpenses =
-        rent +
-        food +
-        transport +
-        interest;
-
-
-    const balance =
-        player.income -
-        totalExpenses;
-
-
-    return {
-
-        salary: player.income,
-        rent: rent,
-        food: food,
-        transport: transport,
-        interest: interest,
-        balance: balance
-
-    };
-
+    font-size: 11px;
 }
 
 
-/* =====================================================
-   STORY
-===================================================== */
+/* MOBILE */
 
-function showStory() {
+#controls {
+    position: absolute;
 
-    let event =
-        story.find(
-            e =>
-                e.year === player.year &&
-                e.month === player.month
-        );
+    left: 20px;
+    bottom: 20px;
 
-
-    if (!event) {
-
-        event = createNormalMonth();
-
-    }
-
-
-    document
-        .getElementById("eventTitle")
-        .innerText =
-        event.title;
-
-
-    document
-        .getElementById("eventText")
-        .innerText =
-        event.text;
-
-
-    document
-        .getElementById("storyDate")
-        .innerText =
-        `${monthName(player.month)} ${player.year}`;
-
-
-    const choices =
-        document.getElementById("choices");
-
-
-    choices.innerHTML = "";
-
-
-    event.choices.forEach(
-        choice => {
-
-            const button =
-                document.createElement("button");
-
-
-            button.innerHTML = `
-                <strong>${choice.name}</strong>
-                <small>${choice.description}</small>
-            `;
-
-
-            button.onclick =
-                () =>
-                    makeChoice(choice);
-
-
-            choices.appendChild(button);
-
-        }
-    );
-
+    text-align: center;
 }
 
+#controls button,
+#interact {
+    border: 1px solid #555;
 
-/* =====================================================
-   NORMAL MONTH
-===================================================== */
+    background: rgba(0,0,0,.75);
 
-function createNormalMonth() {
+    color: white;
 
-    return {
+    width: 52px;
+    height: 52px;
 
-        title: "Another Month",
-
-        text:
-        "Nothing dramatic happens this month. But the bills still arrive.",
-
-        choices: [
-
-            {
-                name: "Save what you can",
-                description: "+₹2,000",
-                money: 2000,
-                health: 0,
-                stress: 2
-            },
-
-            {
-                name: "Work overtime",
-                description: "+₹5,000 / stress",
-                money: 5000,
-                health: -3,
-                stress: 10
-            },
-
-            {
-                name: "Enjoy your life",
-                description: "-₹3,000 / lower stress",
-                money: -3000,
-                health: 5,
-                stress: -10
-            }
-
-        ]
-
-    };
-
+    font-size: 18px;
 }
 
-
-/* =====================================================
-   CHOICE
-===================================================== */
-
-function makeChoice(choice) {
-
-    if (choice.money) {
-
-        if (choice.money < 0) {
-
-            const cost =
-                Math.abs(choice.money);
-
-
-            if (player.cash >= cost) {
-
-                player.cash -= cost;
-
-            } else {
-
-                const shortage =
-                    cost - player.cash;
-
-                player.cash = 0;
-
-                player.debt += shortage;
-
-            }
-
-        } else {
-
-            player.cash += choice.money;
-
-        }
-
-    }
-
-
-    if (choice.income) {
-
-        player.income +=
-            choice.income;
-
-    }
-
-
-    if (choice.debt) {
-
-        player.debt +=
-            choice.debt;
-
-    }
-
-
-    if (choice.debtReduction) {
-
-        player.debt =
-            Math.max(
-                0,
-                player.debt -
-                choice.debtReduction
-            );
-
-    }
-
-
-    if (choice.health) {
-
-        player.health +=
-            choice.health;
-
-    }
-
-
-    if (choice.stress) {
-
-        player.stress +=
-            choice.stress;
-
-    }
-
-
-    player.health =
-        clamp(
-            player.health,
-            0,
-            100
-        );
-
-
-    player.stress =
-        clamp(
-            player.stress,
-            0,
-            100
-        );
-
-
-    addLog(
-        `${monthName(player.month)} ${player.year}: ${choice.name}`
-    );
-
-
-    nextMonth();
-
+#controls button:active,
+#interact:active {
+    background: #333;
 }
 
+#interact {
+    position: absolute;
 
-/* =====================================================
-   NEXT MONTH
-===================================================== */
+    right: 20px;
+    bottom: 35px;
 
-function nextMonth() {
+    width: 100px;
 
-    player.month++;
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
 
+@media (min-width: 800px) {
 
-    if (player.month > 12) {
-
-        player.month = 1;
-
-        player.year++;
-
+    #controls,
+    #interact {
+        opacity: .5;
     }
-
-
-    if (player.year > 2025) {
-
-        finishGame();
-
-        return;
-
-    }
-
-
-    beginMonth();
-
-}
-
-
-/* =====================================================
-   UI
-===================================================== */
-
-function updateUI(finance) {
-
-    document
-        .getElementById("month")
-        .innerText =
-        `${player.month} / ${player.year}`;
-
-
-    document
-        .getElementById("cash")
-        .innerText =
-        money(player.cash);
-
-
-    document
-        .getElementById("income")
-        .innerText =
-        money(player.income);
-
-
-    document
-        .getElementById("debt")
-        .innerText =
-        money(player.debt);
-
-
-    document
-        .getElementById("inflation")
-        .innerText =
-        player.inflation.toFixed(1)
-        + "%";
-
-
-    document
-        .getElementById("health")
-        .innerText =
-        player.health;
-
-
-    document
-        .getElementById("stress")
-        .innerText =
-        player.stress;
-
-
-    document
-        .getElementById("healthBar")
-        .style.width =
-        player.health + "%";
-
-
-    document
-        .getElementById("stressBar")
-        .style.width =
-        player.stress + "%";
-
-
-    document
-        .getElementById("salaryFlow")
-        .innerText =
-        "+" + money(finance.salary);
-
-
-    document
-        .getElementById("rentFlow")
-        .innerText =
-        "-" + money(finance.rent);
-
-
-    document
-        .getElementById("foodFlow")
-        .innerText =
-        "-" + money(finance.food);
-
-
-    document
-        .getElementById("transportFlow")
-        .innerText =
-        "-" + money(finance.transport);
-
-
-    document
-        .getElementById("interestFlow")
-        .innerText =
-        finance.interest > 0
-        ? "-" + money(finance.interest)
-        : "₹0";
-
-
-    document
-        .getElementById("balanceFlow")
-        .innerText =
-        (finance.balance >= 0 ? "+" : "")
-        + money(finance.balance);
-
-}
-
-
-/* =====================================================
-   GAME STATE
-===================================================== */
-
-function checkGameState() {
-
-    if (
-        player.cash <= 0 &&
-        player.debt >= 100000
-    ) {
-
-        endGame(
-            "BANKRUPT",
-            "Your debt has grown beyond your ability to survive.",
-            "💀"
-        );
-
-        return;
-
-    }
-
-
-    if (player.health <= 0) {
-
-        endGame(
-            "YOU BROKE DOWN",
-            "The financial pressure finally became too much.",
-            "🫥"
-        );
-
-        return;
-
-    }
-
-
-    if (player.stress >= 100) {
-
-        endGame(
-            "MENTAL BREAKDOWN",
-            "You survived the bills, but the pressure broke you.",
-            "😵"
-        );
-
-    }
-
-}
-
-
-/* =====================================================
-   FINAL ENDING
-===================================================== */
-
-function finishGame() {
-
-    if (
-        player.cash > 50000 &&
-        player.debt < 20000
-    ) {
-
-        endGame(
-            "FINANCIAL SURVIVOR",
-            "You didn't become rich. You became harder to break.",
-            "🏆"
-        );
-
-        return;
-
-    }
-
-
-    if (player.debt < 50000) {
-
-        endGame(
-            "YOU SURVIVED",
-            "The economy changed. So did you.",
-            "🧍"
-        );
-
-        return;
-
-    }
-
-
-    endGame(
-        "THE STRUGGLE CONTINUES",
-        "You survived, but the debt followed you into the future.",
-        "📉"
-    );
-
-}
-
-
-/* =====================================================
-   END
-===================================================== */
-
-function endGame(title, text, icon) {
-
-    document
-        .getElementById("gameScreen")
-        .classList.remove("active");
-
-
-    document
-        .getElementById("endScreen")
-        .classList.add("active");
-
-
-    document
-        .getElementById("endIcon")
-        .innerText =
-        icon;
-
-
-    document
-        .getElementById("endTitle")
-        .innerText =
-        title;
-
-
-    document
-        .getElementById("endText")
-        .innerText =
-        text;
-
-
-    document
-        .getElementById("finalYear")
-        .innerText =
-        player.year;
-
-
-    document
-        .getElementById("finalCash")
-        .innerText =
-        money(player.cash);
-
-
-    document
-        .getElementById("finalDebt")
-        .innerText =
-        money(player.debt);
-
-}
-
-
-/* =====================================================
-   HELPERS
-===================================================== */
-
-function money(value) {
-
-    return "₹" +
-        Math.round(value)
-            .toLocaleString("en-IN");
-
-}
-
-
-function monthName(month) {
-
-    const names = [
-        "JANUARY",
-        "FEBRUARY",
-        "MARCH",
-        "APRIL",
-        "MAY",
-        "JUNE",
-        "JULY",
-        "AUGUST",
-        "SEPTEMBER",
-        "OCTOBER",
-        "NOVEMBER",
-        "DECEMBER"
-    ];
-
-    return names[month - 1];
-
-}
-
-
-function clamp(value, min, max) {
-
-    return Math.max(
-        min,
-        Math.min(max, value)
-    );
-
-}
-
-
-function addLog(text) {
-
-    const log =
-        document.getElementById("logContent");
-
-
-    const entry =
-        document.createElement("div");
-
-
-    entry.innerText =
-        "› " + text;
-
-
-    log.prepend(entry);
-
 }
