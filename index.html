@@ -1,78 +1,351 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BANKRUPT — Game</title>
 
-    <title>BANKRUPT</title>
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
 
-    <link rel="stylesheet" href="style.css">
+body {
+    overflow: hidden;
+    background: #111;
+    font-family: Arial, sans-serif;
+}
+
+#game {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    overflow: hidden;
+    background: #242424;
+}
+
+/* CITY */
+#world {
+    position: absolute;
+    width: 2000px;
+    height: 1400px;
+    background:
+        linear-gradient(90deg, transparent 79px, #333 80px),
+        linear-gradient(transparent 79px, #333 80px);
+    background-size: 80px 80px;
+}
+
+/* ROAD */
+.road {
+    position: absolute;
+    background: #151515;
+}
+
+.road.horizontal {
+    width: 2000px;
+    height: 120px;
+    top: 600px;
+    left: 0;
+}
+
+.road.vertical {
+    width: 120px;
+    height: 1400px;
+    left: 900px;
+    top: 0;
+}
+
+/* BUILDINGS */
+.building {
+    position: absolute;
+    background: #555;
+    border: 4px solid #777;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-weight: bold;
+}
+
+.house {
+    width: 180px;
+    height: 140px;
+}
+
+.shop {
+    width: 220px;
+    height: 160px;
+    background: #444;
+}
+
+/* PLAYER */
+#player {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    background: white;
+    border: 4px solid #000;
+    border-radius: 50%;
+    z-index: 10;
+}
+
+/* HUD */
+#hud {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 50;
+    background: rgba(0,0,0,.85);
+    color: white;
+    padding: 12px;
+    border-radius: 10px;
+    min-width: 180px;
+}
+
+#hud h2 {
+    font-size: 18px;
+    margin-bottom: 8px;
+}
+
+.stat {
+    margin: 4px 0;
+    font-size: 14px;
+}
+
+/* CONTROLS */
+#controls {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 100;
+    display: grid;
+    grid-template-columns: 55px 55px 55px;
+    gap: 6px;
+}
+
+.control {
+    width: 55px;
+    height: 55px;
+    border-radius: 12px;
+    border: 2px solid #777;
+    background: rgba(0,0,0,.75);
+    color: white;
+    font-size: 22px;
+}
+
+.empty {
+    visibility: hidden;
+}
+
+/* MOBILE */
+@media (min-width: 800px) {
+    #controls {
+        display: none;
+    }
+}
+</style>
 </head>
 
 <body>
 
 <div id="game">
 
-    <canvas id="canvas"></canvas>
+    <div id="world">
 
-    <div id="hud">
+        <div class="road horizontal"></div>
+        <div class="road vertical"></div>
 
-        <div class="brand">
-            BANKRUPT
-            <small>SURVIVE THE ECONOMY</small>
+        <div class="building house" style="left:180px;top:200px;">
+            HOME
         </div>
 
-        <div class="date">
-            <b id="date">JAN 2019</b>
-            <span id="time">08:00</span>
+        <div class="building house" style="left:1250px;top:200px;">
+            APARTMENT
         </div>
 
-        <div class="stats">
-            <span>💰 <b id="cash">₹40,000</b></span>
-            <span>❤️ <b id="health">100</b></span>
-            <span>😰 <b id="stress">10</b></span>
+        <div class="building shop" style="left:300px;top:800px;">
+            GROCERY
         </div>
+
+        <div class="building shop" style="left:1200px;top:800px;">
+            JOB CENTER
+        </div>
+
+        <div id="player"></div>
 
     </div>
-
-
-    <div id="message">
-        Welcome to your life.
-    </div>
-
-
-    <div id="interaction">
-
-        <div id="interactionText">
-            PRESS E TO INTERACT
-        </div>
-
-    </div>
-
-
-    <!-- MOBILE CONTROLS -->
-
-    <div id="controls">
-
-        <button id="up">▲</button>
-
-        <div>
-            <button id="left">◀</button>
-            <button id="down">▼</button>
-            <button id="right">▶</button>
-        </div>
-
-    </div>
-
-
-    <button id="interact">
-        INTERACT
-    </button>
 
 </div>
 
-<script src="game.js"></script>
+<!-- HUD -->
+
+<div id="hud">
+
+    <h2>BANKRUPT</h2>
+
+    <div class="stat">
+        💵 Money: $500
+    </div>
+
+    <div class="stat">
+        🍔 Hunger: 100%
+    </div>
+
+    <div class="stat">
+        ⚡ Energy: 100%
+    </div>
+
+    <div class="stat">
+        📅 Day: 1
+    </div>
+
+</div>
+
+<!-- MOBILE CONTROLS -->
+
+<div id="controls">
+
+    <button class="control empty"></button>
+
+    <button class="control" id="up">▲</button>
+
+    <button class="control empty"></button>
+
+    <button class="control" id="left">◀</button>
+
+    <button class="control" id="down">▼</button>
+
+    <button class="control" id="right">▶</button>
+
+</div>
+
+<script>
+
+const player = document.getElementById("player");
+const world = document.getElementById("world");
+
+let playerX = 980;
+let playerY = 680;
+
+const speed = 5;
+
+const keys = {
+    up: false,
+    down: false,
+    left: false,
+    right: false
+};
+
+/* POSITION */
+
+function updatePlayer() {
+
+    if (keys.up) playerY -= speed;
+    if (keys.down) playerY += speed;
+    if (keys.left) playerX -= speed;
+    if (keys.right) playerX += speed;
+
+    /* WORLD LIMITS */
+
+    playerX = Math.max(0, Math.min(1960, playerX));
+    playerY = Math.max(0, Math.min(1360, playerY));
+
+    player.style.left = playerX + "px";
+    player.style.top = playerY + "px";
+
+    /* CAMERA */
+
+    const screenWidth = window.innerWidth;
+    const screenHeight = window.innerHeight;
+
+    let cameraX = playerX - screenWidth / 2;
+    let cameraY = playerY - screenHeight / 2;
+
+    cameraX = Math.max(0, Math.min(2000 - screenWidth, cameraX));
+    cameraY = Math.max(0, Math.min(1400 - screenHeight, cameraY));
+
+    world.style.transform =
+        `translate(${-cameraX}px, ${-cameraY}px)`;
+
+    requestAnimationFrame(updatePlayer);
+}
+
+updatePlayer();
+
+
+/* KEYBOARD */
+
+document.addEventListener("keydown", function(e) {
+
+    if (e.key === "ArrowUp" || e.key === "w")
+        keys.up = true;
+
+    if (e.key === "ArrowDown" || e.key === "s")
+        keys.down = true;
+
+    if (e.key === "ArrowLeft" || e.key === "a")
+        keys.left = true;
+
+    if (e.key === "ArrowRight" || e.key === "d")
+        keys.right = true;
+
+});
+
+document.addEventListener("keyup", function(e) {
+
+    if (e.key === "ArrowUp" || e.key === "w")
+        keys.up = false;
+
+    if (e.key === "ArrowDown" || e.key === "s")
+        keys.down = false;
+
+    if (e.key === "ArrowLeft" || e.key === "a")
+        keys.left = false;
+
+    if (e.key === "ArrowRight" || e.key === "d")
+        keys.right = false;
+
+});
+
+
+/* MOBILE BUTTONS */
+
+function mobileButton(id, direction) {
+
+    const button = document.getElementById(id);
+
+    button.addEventListener("touchstart", function(e) {
+        e.preventDefault();
+        keys[direction] = true;
+    });
+
+    button.addEventListener("touchend", function(e) {
+        e.preventDefault();
+        keys[direction] = false;
+    });
+
+    button.addEventListener("mousedown", function() {
+        keys[direction] = true;
+    });
+
+    button.addEventListener("mouseup", function() {
+        keys[direction] = false;
+    });
+
+    button.addEventListener("mouseleave", function() {
+        keys[direction] = false;
+    });
+}
+
+mobileButton("up", "up");
+mobileButton("down", "down");
+mobileButton("left", "left");
+mobileButton("right", "right");
+
+</script>
 
 </body>
 </html>
