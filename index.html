@@ -4,9 +4,7 @@
 <head>
 
 <meta charset="UTF-8">
-
-<meta name="viewport"
-content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>BANKRUPT — Day 1</title>
 
@@ -247,12 +245,59 @@ bottom:140px;
 transform:translateX(-50%);
 z-index:300;
 color:white;
-background:rgba(0,0,0,.94);
+background:rgba(0,0,0,.95);
 padding:18px 25px;
 border-radius:12px;
 border:2px solid #666;
 text-align:center;
 display:none;
+min-width:260px;
+}
+
+/* SHOP MENU */
+
+#shopMenu{
+position:fixed;
+left:50%;
+top:50%;
+transform:translate(-50%,-50%);
+z-index:500;
+width:310px;
+padding:22px;
+background:rgba(15,15,15,.97);
+border:3px solid #777;
+border-radius:15px;
+color:white;
+display:none;
+text-align:center;
+}
+
+#shopMenu h2{
+margin-bottom:10px;
+}
+
+#shopMenu p{
+color:#bbb;
+margin-bottom:18px;
+}
+
+.shopButton{
+width:100%;
+padding:13px;
+margin:6px 0;
+border-radius:10px;
+border:2px solid #666;
+background:#222;
+color:white;
+font-size:16px;
+}
+
+.shopButton:active{
+background:#444;
+}
+
+#closeShop{
+background:#111;
 }
 
 /* CONTROLS */
@@ -319,8 +364,6 @@ display:none;
 touch-action:none;
 }
 
-/* DESKTOP */
-
 @media(min-width:800px){
 
 #controls,
@@ -343,6 +386,7 @@ display:none !important;
 
 <div class="sky"></div>
 
+
 <!-- BUILDINGS -->
 
 <div class="building home">
@@ -361,6 +405,7 @@ display:none !important;
 🏦<br>BANK
 </div>
 
+
 <!-- WINDOWS -->
 
 <div class="window w1"></div>
@@ -372,11 +417,13 @@ display:none !important;
 <div class="window w7"></div>
 <div class="window w8"></div>
 
-<!-- WORLD -->
 
 <div class="sidewalk"></div>
 
 <div class="ground"></div>
+
+
+<!-- ROAD -->
 
 <div class="line line1"></div>
 <div class="line line2"></div>
@@ -387,6 +434,7 @@ display:none !important;
 <div class="line line7"></div>
 <div class="line line8"></div>
 <div class="line line9"></div>
+
 
 <!-- PLAYER -->
 
@@ -456,6 +504,40 @@ Walk right → Job Center
 <div id="message"></div>
 
 
+<!-- SHOP MENU -->
+
+<div id="shopMenu">
+
+<h2>🛒 GROCERY STORE</h2>
+
+<p>
+Prices are rising...
+</p>
+
+<button
+class="shopButton"
+id="buyFood">
+
+🍞 Buy Food — $20
+</button>
+
+<button
+class="shopButton"
+id="buyFood5">
+
+🍱 Buy 5 Meals — $90
+</button>
+
+<button
+class="shopButton"
+id="closeShop">
+
+CLOSE
+</button>
+
+</div>
+
+
 <!-- MOBILE CONTROLS -->
 
 <div id="controls">
@@ -491,9 +573,7 @@ INTERACT
 
 <script>
 
-/* =========================
-PLAYER
-========================= */
+/* PLAYER */
 
 const player =
 document.getElementById("player");
@@ -506,6 +586,10 @@ document.getElementById("interact");
 
 const message =
 document.getElementById("message");
+
+const shopMenu =
+document.getElementById("shopMenu");
+
 
 let x = 350;
 
@@ -524,9 +608,7 @@ let onGround = false;
 let jobUnlocked = false;
 
 
-/* =========================
-GAME STATS
-========================= */
+/* STATS */
 
 let money = 500;
 
@@ -539,9 +621,7 @@ let debt = 0;
 let day = 1;
 
 
-/* =========================
-CONTROLS
-========================= */
+/* CONTROLS */
 
 const keys = {
 
@@ -552,9 +632,7 @@ right:false
 };
 
 
-/* =========================
-UPDATE HUD
-========================= */
+/* HUD */
 
 function updateHUD(){
 
@@ -576,13 +654,9 @@ document.getElementById("day")
 }
 
 
-/* =========================
-GAME LOOP
-========================= */
+/* GAME LOOP */
 
 function update(){
-
-/* MOVEMENT */
 
 if(keys.left){
 
@@ -621,15 +695,16 @@ onGround = false;
 }
 
 
-/* WORLD LIMIT */
+/* LIMIT */
 
-x = Math.max(
+x =
+Math.max(
 0,
 Math.min(2950,x)
 );
 
 
-/* PLAYER POSITION */
+/* POSITION */
 
 player.style.left =
 x + "px";
@@ -659,13 +734,19 @@ world.style.transform =
 `translateX(${-cameraX}px)`;
 
 
-/* =========================
-JOB CENTER DETECTION
-========================= */
+/* INTERACTION */
 
 if(
 x > 1450 &&
 x < 1950
+){
+
+interactButton.style.display =
+"block";
+
+}else if(
+x > 750 &&
+x < 1250
 ){
 
 interactButton.style.display =
@@ -679,20 +760,6 @@ interactButton.style.display =
 }
 
 
-/* =========================
-GROCERY DETECTION
-========================= */
-
-if(
-x > 750 &&
-x < 1250
-){
-
-/* nothing yet */
-
-}
-
-
 requestAnimationFrame(update);
 
 }
@@ -700,9 +767,7 @@ requestAnimationFrame(update);
 update();
 
 
-/* =========================
-JUMP
-========================= */
+/* JUMP */
 
 function jump(){
 
@@ -718,11 +783,11 @@ onGround = false;
 }
 
 
-/* =========================
-INTERACT
-========================= */
+/* INTERACT */
 
 function interact(){
+
+/* JOB CENTER */
 
 if(
 x > 1450 &&
@@ -750,14 +815,13 @@ message.style.display =
 document.getElementById(
 "missionTitle"
 ).innerText =
-"MISSION COMPLETE";
+"MISSION: BUY FOOD";
 
 
 document.getElementById(
 "missionText"
 ).innerText =
-"Return home to begin your first working day.";
-
+"Visit the Grocery Store.";
 
 }else{
 
@@ -772,14 +836,106 @@ message.style.display =
 
 }
 
+return;
+
+}
+
+
+/* GROCERY */
+
+if(
+x > 750 &&
+x < 1250
+){
+
+shopMenu.style.display =
+"block";
+
 }
 
 }
 
 
-/* =========================
-KEYBOARD
-========================= */
+/* BUY FOOD */
+
+document.getElementById(
+"buyFood"
+).addEventListener(
+"click",
+function(){
+
+if(money >= 20){
+
+money -= 20;
+
+hunger =
+Math.min(
+100,
+hunger + 30
+);
+
+updateHUD();
+
+}else{
+
+alert(
+"❌ Not enough money."
+);
+
+}
+
+}
+);
+
+
+/* BUY 5 MEALS */
+
+document.getElementById(
+"buyFood5"
+).addEventListener(
+"click",
+function(){
+
+if(money >= 90){
+
+money -= 90;
+
+hunger =
+Math.min(
+100,
+hunger + 100
+);
+
+updateHUD();
+
+}else{
+
+alert(
+"❌ Not enough money."
+);
+
+}
+
+}
+);
+
+
+/* CLOSE */
+
+document.getElementById(
+"closeShop"
+).addEventListener(
+"click",
+function(){
+
+shopMenu.style.display =
+"none";
+
+}
+);
+
+
+/* KEYBOARD */
 
 document.addEventListener(
 "keydown",
@@ -794,7 +950,6 @@ keys.left = true;
 
 }
 
-
 if(
 e.key === "ArrowRight" ||
 e.key === "d"
@@ -803,7 +958,6 @@ e.key === "d"
 keys.right = true;
 
 }
-
 
 if(
 e.key === "ArrowUp" ||
@@ -815,14 +969,14 @@ jump();
 
 }
 
-
 if(e.key === "Enter"){
 
 interact();
 
 }
 
-});
+}
+);
 
 
 document.addEventListener(
@@ -838,7 +992,6 @@ keys.left = false;
 
 }
 
-
 if(
 e.key === "ArrowRight" ||
 e.key === "d"
@@ -848,12 +1001,11 @@ keys.right = false;
 
 }
 
-});
+}
+);
 
 
-/* =========================
-MOBILE MOVEMENT
-========================= */
+/* MOBILE */
 
 function holdButton(
 id,
@@ -862,7 +1014,6 @@ direction
 
 const button =
 document.getElementById(id);
-
 
 button.addEventListener(
 "touchstart",
@@ -875,7 +1026,6 @@ keys[direction] = true;
 }
 );
 
-
 button.addEventListener(
 "touchend",
 function(e){
@@ -887,7 +1037,6 @@ keys[direction] = false;
 }
 );
 
-
 button.addEventListener(
 "mousedown",
 function(){
@@ -896,7 +1045,6 @@ keys[direction] = true;
 
 }
 );
-
 
 button.addEventListener(
 "mouseup",
@@ -921,14 +1069,11 @@ holdButton(
 );
 
 
-/* =========================
-MOBILE JUMP
-========================= */
+/* JUMP MOBILE */
 
 document.getElementById(
 "jump"
-)
-.addEventListener(
+).addEventListener(
 "touchstart",
 function(e){
 
@@ -939,11 +1084,9 @@ jump();
 }
 );
 
-
 document.getElementById(
 "jump"
-)
-.addEventListener(
+).addEventListener(
 "click",
 function(){
 
@@ -953,9 +1096,7 @@ jump();
 );
 
 
-/* =========================
-MOBILE INTERACT
-========================= */
+/* INTERACT MOBILE */
 
 interactButton.addEventListener(
 "touchstart",
@@ -968,7 +1109,6 @@ interact();
 }
 );
 
-
 interactButton.addEventListener(
 "click",
 function(){
@@ -979,9 +1119,7 @@ interact();
 );
 
 
-/* =========================
-CLOSE MESSAGE
-========================= */
+/* MESSAGE CLOSE */
 
 message.addEventListener(
 "click",
@@ -990,16 +1128,16 @@ function(){
 message.style.display =
 "none";
 
-});
+}
+);
 
 
-/* INITIAL HUD */
+/* INITIAL */
 
 updateHUD();
 
 </script>
 
 </body>
-
 </html>
 ```
