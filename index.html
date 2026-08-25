@@ -197,10 +197,10 @@ position:fixed;
 top:15px;
 left:15px;
 z-index:100;
-min-width:230px;
+min-width:250px;
 padding:14px;
 color:white;
-background:rgba(0,0,0,.88);
+background:rgba(0,0,0,.9);
 border:2px solid #555;
 border-radius:10px;
 }
@@ -215,6 +215,11 @@ margin:5px 0;
 font-size:14px;
 }
 
+.warning{
+color:#ff7777;
+font-weight:bold;
+}
+
 /* MISSION */
 
 #mission{
@@ -225,7 +230,7 @@ transform:translateX(-50%);
 z-index:100;
 padding:12px 20px;
 color:white;
-background:rgba(0,0,0,.88);
+background:rgba(0,0,0,.9);
 border:2px solid #555;
 border-radius:10px;
 text-align:center;
@@ -246,13 +251,14 @@ bottom:140px;
 transform:translateX(-50%);
 z-index:400;
 color:white;
-background:rgba(0,0,0,.95);
+background:rgba(0,0,0,.96);
 padding:18px 25px;
 border-radius:12px;
 border:2px solid #666;
 text-align:center;
 display:none;
 min-width:280px;
+max-width:90vw;
 }
 
 /* MENU */
@@ -263,9 +269,10 @@ left:50%;
 top:50%;
 transform:translate(-50%,-50%);
 z-index:500;
-width:320px;
+width:330px;
+max-width:90vw;
 padding:22px;
-background:rgba(15,15,15,.97);
+background:rgba(15,15,15,.98);
 border:3px solid #777;
 border-radius:15px;
 color:white;
@@ -280,6 +287,7 @@ margin-bottom:10px;
 #menu p{
 color:#bbb;
 margin-bottom:18px;
+line-height:1.5;
 }
 
 .menuButton{
@@ -360,8 +368,6 @@ font-weight:bold;
 display:none;
 touch-action:none;
 }
-
-/* DESKTOP */
 
 @media(min-width:800px){
 
@@ -477,11 +483,23 @@ display:none !important;
 </div>
 
 <div class="stat">
+📈 Inflation: <span id="inflation">0</span>%
+</div>
+
+<div class="stat">
+🏠 Rent: $<span id="rent">180</span>
+</div>
+
+<div class="stat">
 📅 Day: <span id="day">1</span>
 </div>
 
 <div class="stat">
 🕐 Time: <span id="time">08:00</span>
+</div>
+
+<div class="stat">
+🏠 Rent due in: <span id="rentDue">3</span> days
 </div>
 
 </div>
@@ -501,6 +519,8 @@ Go to the Job Center.
 
 </div>
 
+
+<!-- MESSAGE -->
 
 <div id="message"></div>
 
@@ -567,9 +587,9 @@ INTERACT
 
 <script>
 
-/* =========================
+/* ==================================================
 PLAYER
-========================= */
+================================================== */
 
 const player =
 document.getElementById("player");
@@ -611,14 +631,18 @@ const jumpPower = -15;
 let onGround = false;
 
 
-/* GAME STATE */
+/* ==================================================
+GAME STATE
+================================================== */
 
 let jobUnlocked = false;
 
 let workedToday = false;
 
 
-/* STATS */
+/* ==================================================
+FINANCIAL STATE
+================================================== */
 
 let money = 500;
 
@@ -628,17 +652,34 @@ let energy = 100;
 
 let debt = 0;
 
+
+/* ==================================================
+TIME
+================================================== */
+
 let day = 1;
-
-
-/* TIME */
 
 let hour = 8;
 
 let minute = 0;
 
 
-/* CONTROLS */
+/* ==================================================
+ECONOMY
+================================================== */
+
+let inflation = 0;
+
+let rent = 180;
+
+const baseFoodPrice = 20;
+
+const baseRent = 180;
+
+
+/* ==================================================
+CONTROLS
+================================================== */
 
 const keys = {
 
@@ -649,26 +690,39 @@ right:false
 };
 
 
-/* =========================
+/* ==================================================
 HUD
-========================= */
+================================================== */
 
 function updateHUD(){
 
 document.getElementById("money")
-.innerText = money;
+.innerText =
+Math.floor(money);
 
 document.getElementById("hunger")
-.innerText = hunger;
+.innerText =
+Math.floor(hunger);
 
 document.getElementById("energy")
-.innerText = energy;
+.innerText =
+Math.floor(energy);
 
 document.getElementById("debt")
-.innerText = debt;
+.innerText =
+Math.floor(debt);
+
+document.getElementById("inflation")
+.innerText =
+inflation;
+
+document.getElementById("rent")
+.innerText =
+rent;
 
 document.getElementById("day")
-.innerText = day;
+.innerText =
+day;
 
 document.getElementById("time")
 .innerText =
@@ -678,12 +732,70 @@ String(hour).padStart(2,"0")
 ":" +
 String(minute).padStart(2,"0");
 
+
+let daysUntilRent =
+3 - ((day - 1) % 3);
+
+if(daysUntilRent === 0){
+
+daysUntilRent = 3;
+
+}
+
+document.getElementById("rentDue")
+.innerText =
+daysUntilRent;
+
+
 }
 
 
-/* =========================
+/* ==================================================
+FOOD PRICE
+================================================== */
+
+function getFoodPrice(){
+
+return Math.round(
+baseFoodPrice *
+(1 + inflation / 100)
+);
+
+}
+
+
+/* ==================================================
+INFLATION
+================================================== */
+
+function updateInflation(){
+
+/*
+Every 3 days inflation increases.
+*/
+
+inflation =
+Math.floor(
+(day - 1) / 3
+) * 5;
+
+
+/*
+Rent slowly increases too.
+*/
+
+rent =
+Math.round(
+baseRent *
+(1 + inflation / 100)
+);
+
+}
+
+
+/* ==================================================
 TIME
-========================= */
+================================================== */
 
 function advanceTime(hours){
 
@@ -696,25 +808,26 @@ hour -= 24;
 }
 
 
-/* HUNGER */
+/*
+Every hour:
+
+Hunger decreases.
+
+Energy decreases slightly.
+*/
 
 hunger =
 Math.max(
 0,
-hunger - (hours * 5)
+hunger - (hours * 2)
 );
-
-
-/* ENERGY */
 
 energy =
 Math.max(
 0,
-energy - (hours * 2)
+energy - (hours * 0.5)
 );
 
-
-/* NIGHT */
 
 updateLighting();
 
@@ -723,23 +836,25 @@ updateHUD();
 }
 
 
-/* =========================
+/* ==================================================
 LIGHTING
-========================= */
+================================================== */
 
 function updateLighting(){
 
 if(hour >= 19 || hour < 6){
 
 world.style.filter =
-"brightness(.45)";
+"brightness(.42)";
 
-}else if(hour >= 17){
+}
+else if(hour >= 17){
 
 world.style.filter =
 "brightness(.7)";
 
-}else{
+}
+else{
 
 world.style.filter =
 "brightness(1)";
@@ -749,9 +864,204 @@ world.style.filter =
 }
 
 
-/* =========================
+/* ==================================================
+RENT
+================================================== */
+
+function processRent(){
+
+/*
+Rent every 3 days.
+
+Day 3
+Day 6
+Day 9
+etc.
+*/
+
+if(day % 3 !== 0){
+
+return;
+
+}
+
+
+if(money >= rent){
+
+money -= rent;
+
+showMessage(
+
+"🏠 <b>RENT PAID</b><br><br>" +
+
+"-$" + rent +
+"<br><br>" +
+
+"Rent for Day " +
+day +
+" has been paid."
+
+);
+
+}
+else{
+
+let unpaid =
+rent - money;
+
+money = 0;
+
+debt += unpaid;
+
+showMessage(
+
+"⚠️ <b>RENT MISSED</b><br><br>" +
+
+"Rent: $" + rent +
+"<br>" +
+
+"Unpaid: $" + unpaid +
+"<br><br>" +
+
+"💳 The unpaid amount has become debt."
+
+);
+
+}
+
+
+/*
+Debt interest.
+
+5% every rent cycle.
+*/
+
+if(debt > 0){
+
+let interest =
+Math.ceil(
+debt * 0.05
+);
+
+debt += interest;
+
+}
+
+
+/*
+Update economy.
+
+*/
+
+updateInflation();
+
+updateHUD();
+
+}
+
+
+/* ==================================================
+NEW DAY
+================================================== */
+
+function startNewDay(){
+
+day++;
+
+workedToday = false;
+
+hour = 8;
+
+minute = 0;
+
+energy = 100;
+
+
+/*
+Hunger continues to decrease overnight.
+*/
+
+hunger =
+Math.max(
+0,
+hunger - 10
+);
+
+
+/*
+Update inflation BEFORE rent calculation.
+*/
+
+updateInflation();
+
+processRent();
+
+updateLighting();
+
+updateHUD();
+
+
+if(jobUnlocked){
+
+document.getElementById(
+"missionTitle"
+).innerText =
+"MISSION: WORK";
+
+document.getElementById(
+"missionText"
+).innerText =
+"Go to the Job Center and start your shift.";
+
+}
+else{
+
+document.getElementById(
+"missionTitle"
+).innerText =
+"MISSION: FIND A JOB";
+
+document.getElementById(
+"missionText"
+).innerText =
+"Go to the Job Center.";
+
+}
+
+
+if(day === 2){
+
+showMessage(
+
+"🌅 <b>DAY 2</b><br><br>" +
+
+"Your first morning begins.<br>" +
+
+"You need to work to survive."
+
+);
+
+}
+else{
+
+showMessage(
+
+"🌅 <b>DAY " +
+day +
+"</b><br><br>" +
+
+"Another day begins."
+
+);
+
+}
+
+}
+
+
+/* ==================================================
 GAME LOOP
-========================= */
+================================================== */
 
 function update(){
 
@@ -785,14 +1095,15 @@ velocityY = 0;
 
 onGround = true;
 
-}else{
+}
+else{
 
 onGround = false;
 
 }
 
 
-/* LIMIT */
+/* WORLD LIMIT */
 
 x =
 Math.max(
@@ -804,7 +1115,7 @@ x
 );
 
 
-/* POSITION */
+/* PLAYER */
 
 player.style.left =
 x + "px";
@@ -825,7 +1136,7 @@ cameraX =
 Math.max(
 0,
 Math.min(
-3000-screenWidth,
+3000 - screenWidth,
 cameraX
 )
 );
@@ -834,18 +1145,74 @@ world.style.transform =
 `translateX(${-cameraX}px)`;
 
 
-/* INTERACTION */
+/* INTERACTION RANGE */
+
+
+/*
+HOME
+*/
 
 if(
-(x > 1450 && x < 1950) ||
-(x > 750 && x < 1250) ||
-(x > 50 && x < 500)
+x > 50 &&
+x < 500
 ){
 
 interactButton.style.display =
 "block";
 
-}else{
+}
+
+
+/*
+GROCERY
+*/
+
+else if(
+x > 750 &&
+x < 1250
+){
+
+interactButton.style.display =
+"block";
+
+}
+
+
+/*
+JOB CENTER
+*/
+
+else if(
+x > 1450 &&
+x < 1950
+){
+
+interactButton.style.display =
+"block";
+
+}
+
+
+/*
+BANK
+*/
+
+else if(
+x > 2150 &&
+x < 2650
+){
+
+interactButton.style.display =
+"block";
+
+}
+
+
+/*
+NOTHING
+*/
+
+else{
 
 interactButton.style.display =
 "none";
@@ -860,9 +1227,9 @@ requestAnimationFrame(update);
 update();
 
 
-/* =========================
+/* ==================================================
 JUMP
-========================= */
+================================================== */
 
 function jump(){
 
@@ -878,15 +1245,21 @@ onGround = false;
 }
 
 
-/* =========================
-INTERACT
-========================= */
+/* ==================================================
+INTERACTION
+================================================== */
 
 function interact(){
 
-/* HOME */
 
-if(x > 50 && x < 500){
+/*
+HOME
+*/
+
+if(
+x > 50 &&
+x < 500
+){
 
 openHome();
 
@@ -895,9 +1268,14 @@ return;
 }
 
 
-/* GROCERY */
+/*
+GROCERY
+*/
 
-if(x > 750 && x < 1250){
+if(
+x > 750 &&
+x < 1250
+){
 
 openGrocery();
 
@@ -906,11 +1284,32 @@ return;
 }
 
 
-/* JOB CENTER */
+/*
+JOB CENTER
+*/
 
-if(x > 1450 && x < 1950){
+if(
+x > 1450 &&
+x < 1950
+){
 
 openJobCenter();
+
+return;
+
+}
+
+
+/*
+BANK
+*/
+
+if(
+x > 2150 &&
+x < 2650
+){
+
+openBank();
 
 return;
 
@@ -919,9 +1318,9 @@ return;
 }
 
 
-/* =========================
+/* ==================================================
 JOB CENTER
-========================= */
+================================================== */
 
 function openJobCenter(){
 
@@ -931,10 +1330,16 @@ menuTitle.innerText =
 "🏢 JOB CENTER";
 
 menuText.innerText =
-"Apply for a basic job. Salary: $100/day.";
+
+"Apply for a basic job.<br><br>" +
+
+"💼 Salary: $100/day<br>" +
+
+"⚡ Work energy cost: 20";
 
 actionButton.innerText =
 "APPLY FOR JOB";
+
 
 actionButton.onclick =
 function(){
@@ -952,49 +1357,72 @@ document.getElementById(
 document.getElementById(
 "missionText"
 ).innerText =
-"Return to the Job Center and start your first shift.";
+"Start your first shift.";
 
 showMessage(
-"💼 JOB ACCEPTED<br><br>" +
+
+"💼 <b>JOB ACCEPTED</b><br><br>" +
+
 "Salary: $100/day<br>" +
-"Energy cost: 20"
+
+"Now you need to survive."
+
 );
 
 };
 
-}else{
+}
+else{
 
 menuTitle.innerText =
 "🏢 JOB CENTER";
 
-menuText.innerText =
-workedToday
-?
-"You already worked today."
-:
-"Ready for your shift?";
+
+if(workedToday){
+
+menuText.innerHTML =
+
+"Today's shift is already complete.<br><br>" +
+
+"Come back tomorrow.";
 
 actionButton.innerText =
-workedToday
-?
-"WORK COMPLETED"
-:
+"SHIFT COMPLETE";
+
+actionButton.onclick =
+function(){};
+
+}
+else{
+
+menuText.innerHTML =
+
+"Your job is waiting.<br><br>" +
+
+"💵 Salary: $100<br>" +
+
+"⚡ Energy cost: 20";
+
+actionButton.innerText =
 "START WORK";
+
 
 actionButton.onclick =
 function(){
 
-if(workedToday){
-
-return;
-
-}
-
 if(energy < 20){
 
+menu.style.display =
+"none";
+
 showMessage(
-"⚡ You're too tired to work.<br><br>" +
+
+"⚡ <b>TOO TIRED</b><br><br>" +
+
+"You don't have enough energy to work.<br>" +
+
 "Go home and sleep."
+
 );
 
 return;
@@ -1002,7 +1430,9 @@ return;
 }
 
 
-/* WORK */
+/*
+WORK
+*/
 
 workedToday = true;
 
@@ -1028,23 +1458,35 @@ menu.style.display =
 updateHUD();
 
 showMessage(
-"💼 SHIFT COMPLETE<br><br>" +
-"Salary received: +$100<br>" +
-"Energy: -20<br>" +
-"Hunger: -10"
+
+"💼 <b>SHIFT COMPLETE</b><br><br>" +
+
+"Salary received: <b>+$100</b><br><br>" +
+
+"⚡ Energy: -20<br>" +
+
+"🍔 Hunger: -10"
+
 );
+
+
+/*
+MISSION
+*/
 
 document.getElementById(
 "missionTitle"
 ).innerText =
-"MISSION: SURVIVE THE DAY";
+"MISSION: MANAGE YOUR MONEY";
 
 document.getElementById(
 "missionText"
 ).innerText =
-"Buy food if you're hungry, then go home.";
+"Buy food if needed and return home.";
 
 };
+
+}
 
 }
 
@@ -1054,36 +1496,60 @@ menu.style.display =
 }
 
 
-/* =========================
+/* ==================================================
 GROCERY
-========================= */
+================================================== */
 
 function openGrocery(){
+
+let foodPrice =
+getFoodPrice();
 
 menuTitle.innerText =
 "🛒 GROCERY STORE";
 
-menuText.innerText =
-"Food price: $20";
+menuText.innerHTML =
+
+"📈 Inflation: " +
+inflation +
+"%<br><br>" +
+
+"🍞 Today's food price: <b>$" +
+foodPrice +
+"</b>";
 
 actionButton.innerText =
-"BUY FOOD — $20";
+"BUY FOOD — $" + foodPrice;
+
 
 actionButton.onclick =
 function(){
 
-if(money < 20){
+if(money < foodPrice){
+
+menu.style.display =
+"none";
 
 showMessage(
-"❌ NOT ENOUGH MONEY<br><br>" +
-"You can't afford food."
+
+"❌ <b>NOT ENOUGH MONEY</b><br><br>" +
+
+"Food costs $" +
+foodPrice +
+"<br>" +
+
+"You only have $" +
+Math.floor(money) +
+"."
+
 );
 
 return;
 
 }
 
-money -= 20;
+
+money -= foodPrice;
 
 hunger =
 Math.min(
@@ -1096,10 +1562,18 @@ advanceTime(1);
 menu.style.display =
 "none";
 
+updateHUD();
+
 showMessage(
-"🍞 FOOD PURCHASED<br><br>" +
-"-$20<br>" +
-"Hunger restored."
+
+"🍞 <b>FOOD PURCHASED</b><br><br>" +
+
+"-$" +
+foodPrice +
+"<br><br>" +
+
+"🍔 Hunger restored."
+
 );
 
 };
@@ -1110,73 +1584,32 @@ menu.style.display =
 }
 
 
-/* =========================
+/* ==================================================
 HOME
-========================= */
+================================================== */
 
 function openHome(){
 
 menuTitle.innerText =
 "🏠 HOME";
 
-menuText.innerText =
-"Rest and prepare for tomorrow.";
+menuText.innerHTML =
+
+"Rest and prepare for tomorrow.<br><br>" +
+
+"⚡ Energy will be restored.";
 
 actionButton.innerText =
 "SLEEP";
 
+
 actionButton.onclick =
 function(){
-
-/* NEW DAY */
-
-day++;
-
-workedToday = false;
-
-hour = 8;
-
-minute = 0;
-
-energy = 100;
-
-hunger =
-Math.max(
-0,
-hunger - 10
-);
 
 menu.style.display =
 "none";
 
-updateHUD();
-
-updateLighting();
-
-showMessage(
-"🌅 DAY " +
-day +
-"<br><br>" +
-"Another day begins..."
-);
-
-document.getElementById(
-"missionTitle"
-).innerText =
-jobUnlocked
-?
-"MISSION: WORK"
-:
-"MISSION: FIND A JOB";
-
-document.getElementById(
-"missionText"
-).innerText =
-jobUnlocked
-?
-"Go to the Job Center."
-:
-"Go to the Job Center.";
+startNewDay();
 
 };
 
@@ -1186,9 +1619,45 @@ menu.style.display =
 }
 
 
-/* =========================
+/* ==================================================
+BANK
+================================================== */
+
+function openBank(){
+
+menuTitle.innerText =
+"🏦 BANK";
+
+menuText.innerHTML =
+
+"Welcome to the bank.<br><br>" +
+
+"💳 Current debt: $" +
+Math.floor(debt) +
+"<br><br>" +
+
+"Loans are currently unavailable.";
+
+actionButton.innerText =
+"OK";
+
+actionButton.onclick =
+function(){
+
+menu.style.display =
+"none";
+
+};
+
+menu.style.display =
+"block";
+
+}
+
+
+/* ==================================================
 MESSAGE
-========================= */
+================================================== */
 
 function showMessage(text){
 
@@ -1198,6 +1667,7 @@ text;
 message.style.display =
 "block";
 
+
 setTimeout(
 function(){
 
@@ -1205,7 +1675,7 @@ message.style.display =
 "none";
 
 },
-3000
+4000
 );
 
 }
@@ -1222,9 +1692,9 @@ message.style.display =
 );
 
 
-/* =========================
+/* ==================================================
 KEYBOARD
-========================= */
+================================================== */
 
 document.addEventListener(
 "keydown",
@@ -1239,6 +1709,7 @@ keys.left = true;
 
 }
 
+
 if(
 e.key === "ArrowRight" ||
 e.key === "d"
@@ -1247,6 +1718,7 @@ e.key === "d"
 keys.right = true;
 
 }
+
 
 if(
 e.key === "ArrowUp" ||
@@ -1258,14 +1730,14 @@ jump();
 
 }
 
+
 if(e.key === "Enter"){
 
 interact();
 
 }
 
-}
-);
+});
 
 
 document.addEventListener(
@@ -1281,6 +1753,7 @@ keys.left = false;
 
 }
 
+
 if(
 e.key === "ArrowRight" ||
 e.key === "d"
@@ -1290,13 +1763,12 @@ keys.right = false;
 
 }
 
-}
-);
+});
 
 
-/* =========================
+/* ==================================================
 MOBILE MOVEMENT
-========================= */
+================================================== */
 
 function holdButton(
 id,
@@ -1305,6 +1777,7 @@ direction
 
 const button =
 document.getElementById(id);
+
 
 button.addEventListener(
 "touchstart",
@@ -1317,6 +1790,7 @@ keys[direction] = true;
 }
 );
 
+
 button.addEventListener(
 "touchend",
 function(e){
@@ -1328,6 +1802,7 @@ keys[direction] = false;
 }
 );
 
+
 button.addEventListener(
 "mousedown",
 function(){
@@ -1336,6 +1811,7 @@ keys[direction] = true;
 
 }
 );
+
 
 button.addEventListener(
 "mouseup",
@@ -1360,9 +1836,9 @@ holdButton(
 );
 
 
-/* =========================
+/* ==================================================
 MOBILE JUMP
-========================= */
+================================================== */
 
 document.getElementById(
 "jump"
@@ -1377,6 +1853,7 @@ jump();
 }
 );
 
+
 document.getElementById(
 "jump"
 ).addEventListener(
@@ -1389,9 +1866,9 @@ jump();
 );
 
 
-/* =========================
+/* ==================================================
 MOBILE INTERACT
-========================= */
+================================================== */
 
 interactButton.addEventListener(
 "touchstart",
@@ -1404,6 +1881,7 @@ interact();
 }
 );
 
+
 interactButton.addEventListener(
 "click",
 function(){
@@ -1414,7 +1892,28 @@ interact();
 );
 
 
-/* INITIAL */
+/* ==================================================
+CLOSE MENU
+================================================== */
+
+document.getElementById(
+"closeMenu"
+).addEventListener(
+"click",
+function(){
+
+menu.style.display =
+"none";
+
+}
+);
+
+
+/* ==================================================
+INITIAL STATE
+================================================== */
+
+updateInflation();
 
 updateHUD();
 
@@ -1423,5 +1922,6 @@ updateLighting();
 </script>
 
 </body>
+
 </html>
 ```
