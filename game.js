@@ -1130,6 +1130,8 @@ function updateUI() {
         .innerText =
         `${monthName(player.month)} ${player.year}`;
 
+   document.getElementById("month").innerText = `${player.month}/${player.year}`;
+
 }
 
 
