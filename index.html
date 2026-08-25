@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>BANKRUPT — The Survival Game</title>
+    <title>BANKRUPT — Economic Survival</title>
 
     <link rel="stylesheet" href="style.css">
 </head>
@@ -15,15 +15,17 @@
 
     <!-- HEADER -->
     <header class="topbar">
+
         <div>
             <div class="logo">BANKRUPT</div>
             <div class="subtitle">SURVIVE THE ECONOMY</div>
         </div>
 
-        <div class="month-box">
+        <div class="date-box">
             <span>MONTH</span>
-            <strong id="month">1</strong>
+            <strong id="month">1 / 2019</strong>
         </div>
+
     </header>
 
 
@@ -34,19 +36,27 @@
 
             <div class="year">2019</div>
 
-            <h1>Everything was<br><span>supposed to be fine.</span></h1>
+            <h1>
+                Everything was
+                <span>supposed to be fine.</span>
+            </h1>
 
             <p>
                 You are 26 years old.
-                You have a job, a small amount of savings,
+                You have a job, some savings,
                 and no serious debt.
             </p>
 
             <p>
-                But the economy doesn't care about your plans.
+                Your salary is enough.
+                Your life is predictable.
             </p>
 
-            <button onclick="startGame()" class="primary-btn">
+            <p class="warning">
+                For now.
+            </p>
+
+            <button class="primary-btn" onclick="startGame()">
                 START YOUR LIFE
             </button>
 
@@ -58,7 +68,9 @@
     <!-- GAME -->
     <section id="gameScreen" class="screen">
 
-        <!-- STATUS -->
+
+        <!-- FINANCIAL DASHBOARD -->
+
         <div class="stats">
 
             <div class="stat">
@@ -80,36 +92,83 @@
                 <span>📈 INFLATION</span>
                 <strong id="inflation">4%</strong>
             </div>
-<div class="month-box">
-    <span>MONTH</span>
-    <strong id="month">1</strong>
-</div>
+
         </div>
 
 
-        <!-- PLAYER CONDITION -->
+        <!-- CONDITION -->
+
         <div class="condition">
 
-            <div>
+            <div class="condition-row">
                 <span>❤️ HEALTH</span>
+
                 <div class="bar">
-                    <div id="healthBar" class="bar-fill health"></div>
+                    <div id="healthBar"
+                         class="bar-fill health"></div>
                 </div>
+
                 <strong id="health">100</strong>
             </div>
 
-            <div>
+
+            <div class="condition-row">
                 <span>😰 STRESS</span>
+
                 <div class="bar">
-                    <div id="stressBar" class="bar-fill stress"></div>
+                    <div id="stressBar"
+                         class="bar-fill stress"></div>
                 </div>
+
                 <strong id="stress">10</strong>
             </div>
 
         </div>
 
 
+        <!-- MONTHLY FINANCES -->
+
+        <div class="finance-card">
+
+            <div class="section-label">
+                THIS MONTH
+            </div>
+
+            <div class="finance-row">
+                <span>Salary</span>
+                <strong id="salaryFlow">+₹25,000</strong>
+            </div>
+
+            <div class="finance-row">
+                <span>Rent</span>
+                <strong id="rentFlow">-₹7,000</strong>
+            </div>
+
+            <div class="finance-row">
+                <span>Food</span>
+                <strong id="foodFlow">-₹5,000</strong>
+            </div>
+
+            <div class="finance-row">
+                <span>Transport</span>
+                <strong id="transportFlow">-₹2,500</strong>
+            </div>
+
+            <div class="finance-row">
+                <span>Debt interest</span>
+                <strong id="interestFlow">₹0</strong>
+            </div>
+
+            <div class="finance-total">
+                <span>MONTHLY BALANCE</span>
+                <strong id="balanceFlow">+₹10,500</strong>
+            </div>
+
+        </div>
+
+
         <!-- STORY -->
+
         <div class="story-card">
 
             <div class="story-date" id="storyDate">
@@ -117,48 +176,33 @@
             </div>
 
             <h2 id="eventTitle">
-                A Normal Beginning
+                The Safety Net
             </h2>
 
             <p id="eventText">
-                Your salary arrives.
-                Rent is due soon.
-                Life feels predictable.
+                Your parents tell you to keep an emergency
+                fund. You wonder if keeping cash is really
+                the safest choice.
             </p>
 
         </div>
 
 
-        <!-- DECISIONS -->
-        <div id="choices" class="choices">
+        <!-- CHOICES -->
 
-            <button onclick="choose(1)">
-                Work overtime
-                <small>+₹5,000 income / +stress</small>
-            </button>
-
-            <button onclick="choose(2)">
-                Save money
-                <small>Reduce spending</small>
-            </button>
-
-            <button onclick="choose(3)">
-                Enjoy life
-                <small>-₹3,000 / -stress</small>
-            </button>
-
-        </div>
+        <div id="choices" class="choices"></div>
 
 
-        <!-- LOG -->
+        <!-- LIFE LOG -->
+
         <div class="log">
 
-            <div class="log-title">
+            <div class="section-label">
                 LIFE LOG
             </div>
 
             <div id="logContent">
-                Your story begins...
+                Your story begins.
             </div>
 
         </div>
@@ -166,7 +210,8 @@
     </section>
 
 
-    <!-- GAME OVER -->
+    <!-- END -->
+
     <section id="endScreen" class="screen">
 
         <div class="end-card">
@@ -184,24 +229,28 @@
             <div class="final-stats">
 
                 <div>
-                    <span>Months Survived</span>
-                    <strong id="finalMonth">0</strong>
+                    <span>YEAR</span>
+                    <strong id="finalYear">2019</strong>
                 </div>
 
                 <div>
-                    <span>Final Cash</span>
+                    <span>CASH</span>
                     <strong id="finalCash">₹0</strong>
                 </div>
 
                 <div>
-                    <span>Final Debt</span>
+                    <span>DEBT</span>
                     <strong id="finalDebt">₹0</strong>
                 </div>
 
             </div>
 
-            <button onclick="location.reload()" class="primary-btn">
-                TRY AGAIN
+            <button
+                onclick="location.reload()"
+                class="primary-btn">
+
+                PLAY AGAIN
+
             </button>
 
         </div>
@@ -209,7 +258,6 @@
     </section>
 
 </div>
-
 
 <script src="game.js"></script>
 
