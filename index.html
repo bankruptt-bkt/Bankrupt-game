@@ -1,149 +1,315 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BANKRUPT — Game</title>
+<title>BANKRUPT — Day 1</title>
 
 <style>
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
 }
 
-body {
-    overflow: hidden;
-    background: #111;
-    font-family: Arial, sans-serif;
+body{
+    overflow:hidden;
+    background:#111;
+    font-family:Arial,sans-serif;
 }
 
-#game {
-    width: 100vw;
-    height: 100vh;
-    position: relative;
-    overflow: hidden;
-    background: #242424;
+#game{
+    position:relative;
+    width:100vw;
+    height:100vh;
+    overflow:hidden;
+    background:#8fb3c9;
 }
 
-/* CITY */
-#world {
-    position: absolute;
-    width: 2000px;
-    height: 1400px;
-    background:
-        linear-gradient(90deg, transparent 79px, #333 80px),
-        linear-gradient(transparent 79px, #333 80px);
-    background-size: 80px 80px;
+/* WORLD */
+
+#world{
+    position:absolute;
+    width:3000px;
+    height:1200px;
 }
 
-/* ROAD */
-.road {
-    position: absolute;
-    background: #151515;
+/* SKY */
+
+.sky{
+    position:absolute;
+    width:3000px;
+    height:700px;
+    background:linear-gradient(#7fa9bd,#d4d9d2);
 }
 
-.road.horizontal {
-    width: 2000px;
-    height: 120px;
-    top: 600px;
-    left: 0;
+/* GROUND */
+
+.ground{
+    position:absolute;
+    left:0;
+    top:700px;
+    width:3000px;
+    height:500px;
+    background:#303030;
+    border-top:8px solid #181818;
 }
 
-.road.vertical {
-    width: 120px;
-    height: 1400px;
-    left: 900px;
-    top: 0;
+/* SIDEWALK */
+
+.sidewalk{
+    position:absolute;
+    left:0;
+    top:650px;
+    width:3000px;
+    height:50px;
+    background:#777;
+    border-top:5px solid #999;
+    border-bottom:5px solid #444;
 }
+
+/* ROAD MARKINGS */
+
+.line{
+    position:absolute;
+    top:850px;
+    width:120px;
+    height:10px;
+    background:#aaa;
+}
+
+.line1{left:200px}
+.line2{left:500px}
+.line3{left:800px}
+.line4{left:1100px}
+.line5{left:1400px}
+.line6{left:1700px}
+.line7{left:2000px}
+.line8{left:2300px}
+.line9{left:2600px}
 
 /* BUILDINGS */
-.building {
-    position: absolute;
-    background: #555;
-    border: 4px solid #777;
-    color: white;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    font-weight: bold;
+
+.building{
+    position:absolute;
+    top:300px;
+    width:300px;
+    height:350px;
+    border:8px solid #222;
+    background:#555;
+    color:white;
+    font-weight:bold;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:26px;
+    text-align:center;
 }
 
-.house {
-    width: 180px;
-    height: 140px;
+.home{
+    left:150px;
+    background:#59616a;
 }
 
-.shop {
-    width: 220px;
-    height: 160px;
-    background: #444;
+.shop{
+    left:850px;
+    background:#514c45;
 }
+
+.job{
+    left:1550px;
+    background:#454545;
+}
+
+.bank{
+    left:2250px;
+    background:#3d4147;
+}
+
+/* WINDOWS */
+
+.window{
+    position:absolute;
+    width:55px;
+    height:70px;
+    background:#9cc4d2;
+    border:5px solid #222;
+}
+
+.w1{left:200px;top:350px}
+.w2{left:300px;top:350px}
+.w3{left:900px;top:350px}
+.w4{left:1000px;top:350px}
+.w5{left:1600px;top:350px}
+.w6{left:1700px;top:350px}
+.w7{left:2300px;top:350px}
+.w8{left:2400px;top:350px}
 
 /* PLAYER */
-#player {
-    position: absolute;
-    width: 40px;
-    height: 40px;
-    background: white;
-    border: 4px solid #000;
-    border-radius: 50%;
-    z-index: 10;
+
+#player{
+    position:absolute;
+    width:46px;
+    height:70px;
+    left:350px;
+    top:580px;
+    z-index:20;
+}
+
+/* HEAD */
+
+.head{
+    position:absolute;
+    width:30px;
+    height:30px;
+    left:8px;
+    top:0;
+    border-radius:50%;
+    background:#d9a07b;
+    border:3px solid #111;
+}
+
+/* BODY */
+
+.body{
+    position:absolute;
+    width:38px;
+    height:35px;
+    left:4px;
+    top:28px;
+    background:#222;
+    border:3px solid #111;
+}
+
+/* LEGS */
+
+.leg{
+    position:absolute;
+    width:12px;
+    height:20px;
+    top:58px;
+    background:#333;
+    border:2px solid #111;
+}
+
+.leg.left{
+    left:8px;
+}
+
+.leg.right{
+    right:8px;
 }
 
 /* HUD */
-#hud {
-    position: fixed;
-    top: 15px;
-    left: 15px;
-    z-index: 50;
-    background: rgba(0,0,0,.85);
-    color: white;
-    padding: 12px;
-    border-radius: 10px;
-    min-width: 180px;
+
+#hud{
+    position:fixed;
+    top:15px;
+    left:15px;
+    z-index:100;
+    min-width:220px;
+    padding:14px;
+    color:white;
+    background:rgba(0,0,0,.88);
+    border:2px solid #555;
+    border-radius:10px;
 }
 
-#hud h2 {
-    font-size: 18px;
-    margin-bottom: 8px;
+#hud h1{
+    font-size:20px;
+    margin-bottom:10px;
 }
 
-.stat {
-    margin: 4px 0;
-    font-size: 14px;
+.stat{
+    margin:5px 0;
+    font-size:14px;
+}
+
+/* MISSION */
+
+#mission{
+    position:fixed;
+    top:15px;
+    left:50%;
+    transform:translateX(-50%);
+    z-index:100;
+    padding:12px 20px;
+    color:white;
+    background:rgba(0,0,0,.88);
+    border:2px solid #555;
+    border-radius:10px;
+    text-align:center;
+}
+
+#mission small{
+    display:block;
+    color:#aaa;
+    margin-top:5px;
+}
+
+/* MESSAGE */
+
+#message{
+    position:fixed;
+    left:50%;
+    bottom:130px;
+    transform:translateX(-50%);
+    z-index:100;
+    color:white;
+    background:rgba(0,0,0,.9);
+    padding:12px 20px;
+    border-radius:10px;
+    display:none;
 }
 
 /* CONTROLS */
-#controls {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 100;
-    display: grid;
-    grid-template-columns: 55px 55px 55px;
-    gap: 6px;
+
+#controls{
+    position:fixed;
+    bottom:20px;
+    left:20px;
+    z-index:200;
+    display:grid;
+    grid-template-columns:65px 65px 65px;
+    gap:8px;
 }
 
-.control {
-    width: 55px;
-    height: 55px;
-    border-radius: 12px;
-    border: 2px solid #777;
-    background: rgba(0,0,0,.75);
-    color: white;
-    font-size: 22px;
+.control{
+    width:65px;
+    height:65px;
+    border-radius:15px;
+    border:2px solid #777;
+    background:rgba(0,0,0,.75);
+    color:white;
+    font-size:25px;
+    touch-action:none;
 }
 
-.empty {
-    visibility: hidden;
+.empty{
+    visibility:hidden;
 }
 
-/* MOBILE */
-@media (min-width: 800px) {
-    #controls {
-        display: none;
+#jump{
+    position:fixed;
+    bottom:30px;
+    right:25px;
+    z-index:200;
+    width:90px;
+    height:90px;
+    border-radius:50%;
+    border:3px solid #777;
+    background:rgba(0,0,0,.75);
+    color:white;
+    font-size:18px;
+    font-weight:bold;
+    touch-action:none;
+}
+
+@media(min-width:800px){
+    #controls,
+    #jump{
+        display:none;
     }
 }
 </style>
@@ -153,199 +319,395 @@ body {
 
 <div id="game">
 
-    <div id="world">
+<div id="world">
 
-        <div class="road horizontal"></div>
-        <div class="road vertical"></div>
+    <div class="sky"></div>
 
-        <div class="building house" style="left:180px;top:200px;">
-            HOME
-        </div>
+    <div class="building home">
+        HOME
+    </div>
 
-        <div class="building house" style="left:1250px;top:200px;">
-            APARTMENT
-        </div>
+    <div class="building shop">
+        GROCERY<br>
+        STORE
+    </div>
 
-        <div class="building shop" style="left:300px;top:800px;">
-            GROCERY
-        </div>
+    <div class="building job">
+        JOB<br>
+        CENTER
+    </div>
 
-        <div class="building shop" style="left:1200px;top:800px;">
-            JOB CENTER
-        </div>
+    <div class="building bank">
+        BANK
+    </div>
 
-        <div id="player"></div>
+    <div class="window w1"></div>
+    <div class="window w2"></div>
+    <div class="window w3"></div>
+    <div class="window w4"></div>
+    <div class="window w5"></div>
+    <div class="window w6"></div>
+    <div class="window w7"></div>
+    <div class="window w8"></div>
+
+    <div class="sidewalk"></div>
+    <div class="ground"></div>
+
+    <div class="line line1"></div>
+    <div class="line line2"></div>
+    <div class="line line3"></div>
+    <div class="line line4"></div>
+    <div class="line line5"></div>
+    <div class="line line6"></div>
+    <div class="line line7"></div>
+    <div class="line line8"></div>
+    <div class="line line9"></div>
+
+    <!-- PLAYER -->
+
+    <div id="player">
+
+        <div class="head"></div>
+        <div class="body"></div>
+
+        <div class="leg left"></div>
+        <div class="leg right"></div>
 
     </div>
 
 </div>
+
+</div>
+
 
 <!-- HUD -->
 
 <div id="hud">
 
-    <h2>BANKRUPT</h2>
+<h1>💀 BANKRUPT</h1>
 
-    <div class="stat">
-        💵 Money: $500
-    </div>
-
-    <div class="stat">
-        🍔 Hunger: 100%
-    </div>
-
-    <div class="stat">
-        ⚡ Energy: 100%
-    </div>
-
-    <div class="stat">
-        📅 Day: 1
-    </div>
+<div class="stat">💵 Money: $500</div>
+<div class="stat">🍔 Hunger: 100%</div>
+<div class="stat">⚡ Energy: 100%</div>
+<div class="stat">💳 Debt: $0</div>
+<div class="stat">📅 Day: 1</div>
 
 </div>
 
-<!-- MOBILE CONTROLS -->
+
+<!-- MISSION -->
+
+<div id="mission">
+
+<strong>MISSION: FIND A JOB</strong>
+
+<small>
+Walk right → Job Center
+</small>
+
+</div>
+
+
+<div id="message"></div>
+
+
+<!-- MOBILE -->
 
 <div id="controls">
 
-    <button class="control empty"></button>
+<button class="control empty"></button>
+<button class="control" id="left">◀</button>
+<button class="control empty"></button>
 
-    <button class="control" id="up">▲</button>
-
-    <button class="control empty"></button>
-
-    <button class="control" id="left">◀</button>
-
-    <button class="control" id="down">▼</button>
-
-    <button class="control" id="right">▶</button>
+<button class="control empty"></button>
+<button class="control" id="right">▶</button>
+<button class="control empty"></button>
 
 </div>
 
+<button id="jump">JUMP</button>
+
+
 <script>
+
+/* PLAYER */
 
 const player = document.getElementById("player");
 const world = document.getElementById("world");
+const message = document.getElementById("message");
 
-let playerX = 980;
-let playerY = 680;
+let x = 350;
+let y = 580;
 
-const speed = 5;
+let velocityY = 0;
+
+let speed = 6;
+
+let gravity = 0.8;
+
+let jumpPower = -15;
+
+let onGround = false;
+
+
+/* CONTROLS */
 
 const keys = {
-    up: false,
-    down: false,
-    left: false,
-    right: false
+    left:false,
+    right:false
 };
 
-/* POSITION */
 
-function updatePlayer() {
+/* MOVE */
 
-    if (keys.up) playerY -= speed;
-    if (keys.down) playerY += speed;
-    if (keys.left) playerX -= speed;
-    if (keys.right) playerX += speed;
+function update(){
 
-    /* WORLD LIMITS */
+    if(keys.left){
+        x -= speed;
+    }
 
-    playerX = Math.max(0, Math.min(1960, playerX));
-    playerY = Math.max(0, Math.min(1360, playerY));
+    if(keys.right){
+        x += speed;
+    }
 
-    player.style.left = playerX + "px";
-    player.style.top = playerY + "px";
+
+    /* GRAVITY */
+
+    velocityY += gravity;
+
+    y += velocityY;
+
+
+    /* GROUND */
+
+    if(y >= 580){
+
+        y = 580;
+
+        velocityY = 0;
+
+        onGround = true;
+
+    }else{
+
+        onGround = false;
+
+    }
+
+
+    /* WORLD LIMIT */
+
+    x = Math.max(0, Math.min(2950,x));
+
+
+    /* PLAYER */
+
+    player.style.left = x + "px";
+    player.style.top = y + "px";
+
 
     /* CAMERA */
 
     const screenWidth = window.innerWidth;
-    const screenHeight = window.innerHeight;
 
-    let cameraX = playerX - screenWidth / 2;
-    let cameraY = playerY - screenHeight / 2;
+    let cameraX = x - screenWidth / 2;
 
-    cameraX = Math.max(0, Math.min(2000 - screenWidth, cameraX));
-    cameraY = Math.max(0, Math.min(1400 - screenHeight, cameraY));
+    cameraX = Math.max(
+        0,
+        Math.min(3000-screenWidth,cameraX)
+    );
+
 
     world.style.transform =
-        `translate(${-cameraX}px, ${-cameraY}px)`;
+        `translateX(${-cameraX}px)`;
 
-    requestAnimationFrame(updatePlayer);
+
+    /* JOB CENTER */
+
+    if(x > 1500 && x < 1900){
+
+        missionComplete();
+
+    }
+
+
+    requestAnimationFrame(update);
+
 }
 
-updatePlayer();
+update();
+
+
+/* JUMP */
+
+function jump(){
+
+    if(onGround){
+
+        velocityY = jumpPower;
+
+        onGround = false;
+
+    }
+
+}
 
 
 /* KEYBOARD */
 
-document.addEventListener("keydown", function(e) {
+document.addEventListener("keydown",function(e){
 
-    if (e.key === "ArrowUp" || e.key === "w")
-        keys.up = true;
-
-    if (e.key === "ArrowDown" || e.key === "s")
-        keys.down = true;
-
-    if (e.key === "ArrowLeft" || e.key === "a")
+    if(e.key === "ArrowLeft" || e.key === "a"){
         keys.left = true;
+    }
 
-    if (e.key === "ArrowRight" || e.key === "d")
+    if(e.key === "ArrowRight" || e.key === "d"){
         keys.right = true;
+    }
+
+    if(e.key === "ArrowUp" ||
+       e.key === "w" ||
+       e.key === " "){
+
+        jump();
+
+    }
 
 });
 
-document.addEventListener("keyup", function(e) {
 
-    if (e.key === "ArrowUp" || e.key === "w")
-        keys.up = false;
+document.addEventListener("keyup",function(e){
 
-    if (e.key === "ArrowDown" || e.key === "s")
-        keys.down = false;
-
-    if (e.key === "ArrowLeft" || e.key === "a")
+    if(e.key === "ArrowLeft" || e.key === "a"){
         keys.left = false;
+    }
 
-    if (e.key === "ArrowRight" || e.key === "d")
+    if(e.key === "ArrowRight" || e.key === "d"){
         keys.right = false;
+    }
 
 });
 
 
-/* MOBILE BUTTONS */
+/* MOBILE */
 
-function mobileButton(id, direction) {
+function holdButton(id,direction){
 
-    const button = document.getElementById(id);
+    const button =
+        document.getElementById(id);
 
-    button.addEventListener("touchstart", function(e) {
-        e.preventDefault();
-        keys[direction] = true;
-    });
 
-    button.addEventListener("touchend", function(e) {
-        e.preventDefault();
-        keys[direction] = false;
-    });
+    button.addEventListener(
+        "touchstart",
+        function(e){
 
-    button.addEventListener("mousedown", function() {
-        keys[direction] = true;
-    });
+            e.preventDefault();
 
-    button.addEventListener("mouseup", function() {
-        keys[direction] = false;
-    });
+            keys[direction] = true;
 
-    button.addEventListener("mouseleave", function() {
-        keys[direction] = false;
-    });
+        }
+    );
+
+
+    button.addEventListener(
+        "touchend",
+        function(e){
+
+            e.preventDefault();
+
+            keys[direction] = false;
+
+        }
+    );
+
+
+    button.addEventListener(
+        "mousedown",
+        function(){
+
+            keys[direction] = true;
+
+        }
+    );
+
+
+    button.addEventListener(
+        "mouseup",
+        function(){
+
+            keys[direction] = false;
+
+        }
+    );
+
 }
 
-mobileButton("up", "up");
-mobileButton("down", "down");
-mobileButton("left", "left");
-mobileButton("right", "right");
+
+holdButton("left","left");
+holdButton("right","right");
+
+
+document.getElementById("jump")
+.addEventListener("touchstart",function(e){
+
+    e.preventDefault();
+
+    jump();
+
+});
+
+
+document.getElementById("jump")
+.addEventListener("mousedown",function(){
+
+    jump();
+
+});
+
+
+/* MISSION */
+
+function missionComplete(){
+
+    if(message.style.display === "block"){
+        return;
+    }
+
+    message.innerHTML =
+        "🏢 You found the Job Center.<br><br>" +
+        "Press ENTER to apply for work.";
+
+    message.style.display = "block";
+
+}
+
+
+/* ENTER */
+
+document.addEventListener("keydown",function(e){
+
+    if(e.key === "Enter" &&
+       x > 1500 &&
+       x < 1900){
+
+        message.innerHTML =
+            "📄 APPLICATION SUBMITTED<br><br>" +
+            "Your first job starts tomorrow.";
+
+        setTimeout(function(){
+
+            message.innerHTML =
+                "⚠️ But something is wrong...<br><br>" +
+                "The cost of living has increased.";
+
+        },2500);
+
+    }
+
+});
 
 </script>
 
 </body>
 </html>
+```
