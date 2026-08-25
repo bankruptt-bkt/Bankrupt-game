@@ -181,6 +181,28 @@ canvas {
     letter-spacing: 1px;
 }
 
+#interact{
+    position:fixed;
+    bottom:135px;
+    right:25px;
+    z-index:200;
+    width:90px;
+    height:55px;
+    border-radius:15px;
+    border:3px solid #777;
+    background:rgba(0,0,0,.75);
+    color:white;
+    font-size:14px;
+    font-weight:bold;
+    touch-action:none;
+}
+
+@media(min-width:800px){
+    #interact{
+        display:none;
+    }
+}
+
 @media (min-width: 800px) {
 
     #controls,
