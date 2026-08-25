@@ -34,6 +34,7 @@ background:#8fb3c9;
 position:absolute;
 width:3000px;
 height:1200px;
+transition:filter 1s;
 }
 
 .sky{
@@ -196,7 +197,7 @@ position:fixed;
 top:15px;
 left:15px;
 z-index:100;
-min-width:220px;
+min-width:230px;
 padding:14px;
 color:white;
 background:rgba(0,0,0,.88);
@@ -243,7 +244,7 @@ position:fixed;
 left:50%;
 bottom:140px;
 transform:translateX(-50%);
-z-index:300;
+z-index:400;
 color:white;
 background:rgba(0,0,0,.95);
 padding:18px 25px;
@@ -251,18 +252,18 @@ border-radius:12px;
 border:2px solid #666;
 text-align:center;
 display:none;
-min-width:260px;
+min-width:280px;
 }
 
-/* SHOP MENU */
+/* MENU */
 
-#shopMenu{
+#menu{
 position:fixed;
 left:50%;
 top:50%;
 transform:translate(-50%,-50%);
 z-index:500;
-width:310px;
+width:320px;
 padding:22px;
 background:rgba(15,15,15,.97);
 border:3px solid #777;
@@ -272,16 +273,16 @@ display:none;
 text-align:center;
 }
 
-#shopMenu h2{
+#menu h2{
 margin-bottom:10px;
 }
 
-#shopMenu p{
+#menu p{
 color:#bbb;
 margin-bottom:18px;
 }
 
-.shopButton{
+.menuButton{
 width:100%;
 padding:13px;
 margin:6px 0;
@@ -292,12 +293,8 @@ color:white;
 font-size:16px;
 }
 
-.shopButton:active{
+.menuButton:active{
 background:#444;
-}
-
-#closeShop{
-background:#111;
 }
 
 /* CONTROLS */
@@ -363,6 +360,8 @@ font-weight:bold;
 display:none;
 touch-action:none;
 }
+
+/* DESKTOP */
 
 @media(min-width:800px){
 
@@ -481,6 +480,10 @@ display:none !important;
 📅 Day: <span id="day">1</span>
 </div>
 
+<div class="stat">
+🕐 Time: <span id="time">08:00</span>
+</div>
+
 </div>
 
 
@@ -493,52 +496,43 @@ MISSION: FIND A JOB
 </strong>
 
 <small id="missionText">
-Walk right → Job Center
+Go to the Job Center.
 </small>
 
 </div>
 
 
-<!-- MESSAGE -->
-
 <div id="message"></div>
 
 
-<!-- SHOP MENU -->
+<!-- MENU -->
 
-<div id="shopMenu">
+<div id="menu">
 
-<h2>🛒 GROCERY STORE</h2>
+<h2 id="menuTitle">
+BANKRUPT
+</h2>
 
-<p>
-Prices are rising...
+<p id="menuText">
+Choose an action.
 </p>
 
 <button
-class="shopButton"
-id="buyFood">
-
-🍞 Buy Food — $20
+class="menuButton"
+id="actionButton">
+ACTION
 </button>
 
 <button
-class="shopButton"
-id="buyFood5">
-
-🍱 Buy 5 Meals — $90
-</button>
-
-<button
-class="shopButton"
-id="closeShop">
-
+class="menuButton"
+id="closeMenu">
 CLOSE
 </button>
 
 </div>
 
 
-<!-- MOBILE CONTROLS -->
+<!-- MOBILE -->
 
 <div id="controls">
 
@@ -573,7 +567,9 @@ INTERACT
 
 <script>
 
-/* PLAYER */
+/* =========================
+PLAYER
+========================= */
 
 const player =
 document.getElementById("player");
@@ -587,8 +583,17 @@ document.getElementById("interact");
 const message =
 document.getElementById("message");
 
-const shopMenu =
-document.getElementById("shopMenu");
+const menu =
+document.getElementById("menu");
+
+const menuTitle =
+document.getElementById("menuTitle");
+
+const menuText =
+document.getElementById("menuText");
+
+const actionButton =
+document.getElementById("actionButton");
 
 
 let x = 350;
@@ -605,7 +610,12 @@ const jumpPower = -15;
 
 let onGround = false;
 
+
+/* GAME STATE */
+
 let jobUnlocked = false;
+
+let workedToday = false;
 
 
 /* STATS */
@@ -621,6 +631,13 @@ let debt = 0;
 let day = 1;
 
 
+/* TIME */
+
+let hour = 8;
+
+let minute = 0;
+
+
 /* CONTROLS */
 
 const keys = {
@@ -632,7 +649,9 @@ right:false
 };
 
 
-/* HUD */
+/* =========================
+HUD
+========================= */
 
 function updateHUD(){
 
@@ -651,10 +670,88 @@ document.getElementById("debt")
 document.getElementById("day")
 .innerText = day;
 
+document.getElementById("time")
+.innerText =
+
+String(hour).padStart(2,"0")
++
+":" +
+String(minute).padStart(2,"0");
+
 }
 
 
-/* GAME LOOP */
+/* =========================
+TIME
+========================= */
+
+function advanceTime(hours){
+
+hour += hours;
+
+if(hour >= 24){
+
+hour -= 24;
+
+}
+
+
+/* HUNGER */
+
+hunger =
+Math.max(
+0,
+hunger - (hours * 5)
+);
+
+
+/* ENERGY */
+
+energy =
+Math.max(
+0,
+energy - (hours * 2)
+);
+
+
+/* NIGHT */
+
+updateLighting();
+
+updateHUD();
+
+}
+
+
+/* =========================
+LIGHTING
+========================= */
+
+function updateLighting(){
+
+if(hour >= 19 || hour < 6){
+
+world.style.filter =
+"brightness(.45)";
+
+}else if(hour >= 17){
+
+world.style.filter =
+"brightness(.7)";
+
+}else{
+
+world.style.filter =
+"brightness(1)";
+
+}
+
+}
+
+
+/* =========================
+GAME LOOP
+========================= */
 
 function update(){
 
@@ -700,7 +797,10 @@ onGround = false;
 x =
 Math.max(
 0,
-Math.min(2950,x)
+Math.min(
+2950,
+x
+)
 );
 
 
@@ -737,16 +837,9 @@ world.style.transform =
 /* INTERACTION */
 
 if(
-x > 1450 &&
-x < 1950
-){
-
-interactButton.style.display =
-"block";
-
-}else if(
-x > 750 &&
-x < 1250
+(x > 1450 && x < 1950) ||
+(x > 750 && x < 1250) ||
+(x > 50 && x < 500)
 ){
 
 interactButton.style.display =
@@ -767,7 +860,9 @@ requestAnimationFrame(update);
 update();
 
 
-/* JUMP */
+/* =========================
+JUMP
+========================= */
 
 function jump(){
 
@@ -783,58 +878,17 @@ onGround = false;
 }
 
 
-/* INTERACT */
+/* =========================
+INTERACT
+========================= */
 
 function interact(){
 
-/* JOB CENTER */
+/* HOME */
 
-if(
-x > 1450 &&
-x < 1950
-){
+if(x > 50 && x < 500){
 
-if(!jobUnlocked){
-
-jobUnlocked = true;
-
-message.innerHTML =
-
-"📄 <b>JOB APPLICATION</b><br><br>" +
-
-"You have been accepted for work.<br><br>" +
-
-"💼 Daily salary: $100<br>" +
-
-"⚡ Energy cost: 20";
-
-message.style.display =
-"block";
-
-
-document.getElementById(
-"missionTitle"
-).innerText =
-"MISSION: BUY FOOD";
-
-
-document.getElementById(
-"missionText"
-).innerText =
-"Visit the Grocery Store.";
-
-}else{
-
-message.innerHTML =
-
-"💼 <b>JOB CENTER</b><br><br>" +
-
-"You already have a job.";
-
-message.style.display =
-"block";
-
-}
+openHome();
 
 return;
 
@@ -843,99 +897,334 @@ return;
 
 /* GROCERY */
 
-if(
-x > 750 &&
-x < 1250
-){
+if(x > 750 && x < 1250){
 
-shopMenu.style.display =
+openGrocery();
+
+return;
+
+}
+
+
+/* JOB CENTER */
+
+if(x > 1450 && x < 1950){
+
+openJobCenter();
+
+return;
+
+}
+
+}
+
+
+/* =========================
+JOB CENTER
+========================= */
+
+function openJobCenter(){
+
+if(!jobUnlocked){
+
+menuTitle.innerText =
+"🏢 JOB CENTER";
+
+menuText.innerText =
+"Apply for a basic job. Salary: $100/day.";
+
+actionButton.innerText =
+"APPLY FOR JOB";
+
+actionButton.onclick =
+function(){
+
+jobUnlocked = true;
+
+menu.style.display =
+"none";
+
+document.getElementById(
+"missionTitle"
+).innerText =
+"MISSION: WORK";
+
+document.getElementById(
+"missionText"
+).innerText =
+"Return to the Job Center and start your first shift.";
+
+showMessage(
+"💼 JOB ACCEPTED<br><br>" +
+"Salary: $100/day<br>" +
+"Energy cost: 20"
+);
+
+};
+
+}else{
+
+menuTitle.innerText =
+"🏢 JOB CENTER";
+
+menuText.innerText =
+workedToday
+?
+"You already worked today."
+:
+"Ready for your shift?";
+
+actionButton.innerText =
+workedToday
+?
+"WORK COMPLETED"
+:
+"START WORK";
+
+actionButton.onclick =
+function(){
+
+if(workedToday){
+
+return;
+
+}
+
+if(energy < 20){
+
+showMessage(
+"⚡ You're too tired to work.<br><br>" +
+"Go home and sleep."
+);
+
+return;
+
+}
+
+
+/* WORK */
+
+workedToday = true;
+
+money += 100;
+
+energy =
+Math.max(
+0,
+energy - 20
+);
+
+hunger =
+Math.max(
+0,
+hunger - 10
+);
+
+advanceTime(8);
+
+menu.style.display =
+"none";
+
+updateHUD();
+
+showMessage(
+"💼 SHIFT COMPLETE<br><br>" +
+"Salary received: +$100<br>" +
+"Energy: -20<br>" +
+"Hunger: -10"
+);
+
+document.getElementById(
+"missionTitle"
+).innerText =
+"MISSION: SURVIVE THE DAY";
+
+document.getElementById(
+"missionText"
+).innerText =
+"Buy food if you're hungry, then go home.";
+
+};
+
+}
+
+menu.style.display =
 "block";
 
 }
 
-}
 
+/* =========================
+GROCERY
+========================= */
 
-/* BUY FOOD */
+function openGrocery(){
 
-document.getElementById(
-"buyFood"
-).addEventListener(
-"click",
+menuTitle.innerText =
+"🛒 GROCERY STORE";
+
+menuText.innerText =
+"Food price: $20";
+
+actionButton.innerText =
+"BUY FOOD — $20";
+
+actionButton.onclick =
 function(){
 
-if(money >= 20){
+if(money < 20){
+
+showMessage(
+"❌ NOT ENOUGH MONEY<br><br>" +
+"You can't afford food."
+);
+
+return;
+
+}
 
 money -= 20;
 
 hunger =
 Math.min(
 100,
-hunger + 30
+hunger + 40
 );
 
-updateHUD();
+advanceTime(1);
 
-}else{
+menu.style.display =
+"none";
 
-alert(
-"❌ Not enough money."
+showMessage(
+"🍞 FOOD PURCHASED<br><br>" +
+"-$20<br>" +
+"Hunger restored."
 );
+
+};
+
+menu.style.display =
+"block";
 
 }
 
-}
-);
 
+/* =========================
+HOME
+========================= */
 
-/* BUY 5 MEALS */
+function openHome(){
 
-document.getElementById(
-"buyFood5"
-).addEventListener(
-"click",
+menuTitle.innerText =
+"🏠 HOME";
+
+menuText.innerText =
+"Rest and prepare for tomorrow.";
+
+actionButton.innerText =
+"SLEEP";
+
+actionButton.onclick =
 function(){
 
-if(money >= 90){
+/* NEW DAY */
 
-money -= 90;
+day++;
+
+workedToday = false;
+
+hour = 8;
+
+minute = 0;
+
+energy = 100;
 
 hunger =
-Math.min(
-100,
-hunger + 100
+Math.max(
+0,
+hunger - 10
 );
+
+menu.style.display =
+"none";
 
 updateHUD();
 
-}else{
+updateLighting();
 
-alert(
-"❌ Not enough money."
+showMessage(
+"🌅 DAY " +
+day +
+"<br><br>" +
+"Another day begins..."
 );
-
-}
-
-}
-);
-
-
-/* CLOSE */
 
 document.getElementById(
-"closeShop"
-).addEventListener(
+"missionTitle"
+).innerText =
+jobUnlocked
+?
+"MISSION: WORK"
+:
+"MISSION: FIND A JOB";
+
+document.getElementById(
+"missionText"
+).innerText =
+jobUnlocked
+?
+"Go to the Job Center."
+:
+"Go to the Job Center.";
+
+};
+
+menu.style.display =
+"block";
+
+}
+
+
+/* =========================
+MESSAGE
+========================= */
+
+function showMessage(text){
+
+message.innerHTML =
+text;
+
+message.style.display =
+"block";
+
+setTimeout(
+function(){
+
+message.style.display =
+"none";
+
+},
+3000
+);
+
+}
+
+
+message.addEventListener(
 "click",
 function(){
 
-shopMenu.style.display =
+message.style.display =
 "none";
 
 }
 );
 
 
-/* KEYBOARD */
+/* =========================
+KEYBOARD
+========================= */
 
 document.addEventListener(
 "keydown",
@@ -1005,7 +1294,9 @@ keys.right = false;
 );
 
 
-/* MOBILE */
+/* =========================
+MOBILE MOVEMENT
+========================= */
 
 function holdButton(
 id,
@@ -1069,7 +1360,9 @@ holdButton(
 );
 
 
-/* JUMP MOBILE */
+/* =========================
+MOBILE JUMP
+========================= */
 
 document.getElementById(
 "jump"
@@ -1096,7 +1389,9 @@ jump();
 );
 
 
-/* INTERACT MOBILE */
+/* =========================
+MOBILE INTERACT
+========================= */
 
 interactButton.addEventListener(
 "touchstart",
@@ -1114,19 +1409,6 @@ interactButton.addEventListener(
 function(){
 
 interact();
-
-}
-);
-
-
-/* MESSAGE CLOSE */
-
-message.addEventListener(
-"click",
-function(){
-
-message.style.display =
-"none";
 
 }
 );
@@ -1135,6 +1417,8 @@ message.style.display =
 /* INITIAL */
 
 updateHUD();
+
+updateLighting();
 
 </script>
 
