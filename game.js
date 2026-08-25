@@ -1,1102 +1,718 @@
-/* =====================================================
-   BANKRUPT
-   ECONOMIC SURVIVAL GAME
-   VERSION 2
-===================================================== */
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
 
-let player = {
-    month: 1,
-    year: 2019,
+let W, H;
+
+function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+}
+
+window.addEventListener("resize", resize);
+resize();
+
+
+/* =========================
+   PLAYER
+========================= */
+
+const player = {
+
+    x: 500,
+    y: 400,
+
+    size: 18,
+
+    speed: 3,
 
     cash: 40000,
-    income: 25000,
-
-    debt: 0,
-
-    inflation: 4,
 
     health: 100,
+
     stress: 10,
 
-    rent: 7000,
-    food: 5000,
+    month: 1,
 
-    jobSecurity: 90,
+    year: 2019,
 
-    knowledge: 0,
+    hour: 8,
 
-    bitcoinKnowledge: 0,
+    minute: 0
 
-    reputation: 0
 };
 
 
-/* =====================================================
-   HISTORICAL STORY EVENTS
-===================================================== */
+/* =========================
+   INPUT
+========================= */
 
-const historicalEvents = [
+const keys = {};
 
-    /* 2019 */
+window.addEventListener("keydown", e => {
+
+    keys[e.key.toLowerCase()] = true;
+
+    if (e.key.toLowerCase() === "e") {
+        interact();
+    }
+
+});
+
+window.addEventListener("keyup", e => {
+
+    keys[e.key.toLowerCase()] = false;
+
+});
+
+
+function button(id, key) {
+
+    const el =
+        document.getElementById(id);
+
+    el.addEventListener("touchstart",
+        e => {
+            e.preventDefault();
+            keys[key] = true;
+        });
+
+    el.addEventListener("touchend",
+        e => {
+            e.preventDefault();
+            keys[key] = false;
+        });
+
+    el.addEventListener("mousedown",
+        () => keys[key] = true);
+
+    el.addEventListener("mouseup",
+        () => keys[key] = false);
+
+}
+
+
+button("up", "w");
+button("down", "s");
+button("left", "a");
+button("right", "d");
+
+
+document
+    .getElementById("interact")
+    .addEventListener("click", interact);
+
+
+/* =========================
+   WORLD
+========================= */
+
+const buildings = [
 
     {
-        year: 2019,
-        title: "A Normal Life",
-        text:
-        "Your salary arrives on time. Prices are manageable and you still believe that saving money is enough.",
-        choices: [
-            ["Save aggressively", 3000, 0, 2],
-            ["Enjoy the month", -3000, 5, -8],
-            ["Learn about investing", -1000, 0, 2]
-        ]
+        name: "YOUR APARTMENT",
+        x: 100,
+        y: 180,
+        w: 230,
+        h: 150,
+        color: "#333",
+        type: "home"
     },
 
     {
-        year: 2019,
-        title: "The Safety Net",
-        text:
-        "Your parents tell you to keep an emergency fund. You wonder if keeping cash is really the safest choice.",
-        choices: [
-            ["Build savings", 3000, 0, 0],
-            ["Help your family", -3000, 0, -5],
-            ["Take financial risk", 5000, -2, 8]
-        ]
-    },
-
-
-    /* 2020 */
-
-    {
-        year: 2020,
-        title: "The World Stops",
-        text:
-        "Businesses close. Streets become empty. Nobody knows how long it will last.",
-        choices: [
-            ["Stay home and protect your job", 0, 5, 5],
-            ["Take whatever work you can find", 3000, -5, 10],
-            ["Use your savings", -5000, 5, -5]
-        ]
+        name: "OFFICE",
+        x: 650,
+        y: 150,
+        w: 250,
+        h: 180,
+        color: "#292929",
+        type: "work"
     },
 
     {
-        year: 2020,
-        title: "Job Security",
-        text:
-        "Your company announces salary cuts. Nobody knows who will be next.",
-        choices: [
-            ["Accept the pay cut", -3000, 0, 8],
-            ["Look for another job", -1000, 0, 12],
-            ["Start freelancing", 4000, -5, 15]
-        ]
+        name: "GROCERY SHOP",
+        x: 100,
+        y: 570,
+        w: 260,
+        h: 150,
+        color: "#303030",
+        type: "shop"
     },
 
     {
-        year: 2020,
-        title: "Emergency Fund",
-        text:
-        "Months of uncertainty have changed the way you think about money.",
-        choices: [
-            ["Keep cash", 2000, 0, -2],
-            ["Buy necessities", -3000, 5, -5],
-            ["Invest a small amount", -3000, 0, 5]
-        ]
-    },
-
-
-    /* 2021 */
-
-    {
-        year: 2021,
-        title: "The Recovery",
-        text:
-        "The economy starts reopening. People begin spending again.",
-        choices: [
-            ["Work harder", 5000, -5, 10],
-            ["Save the recovery money", 3000, 0, 2],
-            ["Spend and enjoy", -5000, 8, -10]
-        ]
-    },
-
-    {
-        year: 2021,
-        title: "Everything Is Going Up",
-        text:
-        "Asset prices are rising everywhere. Friends are making money and telling you that you're missing out.",
-        choices: [
-            ["Ignore the hype", 0, 0, -3],
-            ["Invest carefully", -5000, 0, 8],
-            ["Go all in", -10000, -5, 20]
-        ]
-    },
-
-
-    /* 2022 */
-
-    {
-        year: 2022,
-        title: "The Inflation Shock",
-        text:
-        "Fuel, food and rent are becoming noticeably more expensive. Your salary hasn't changed.",
-        choices: [
-            ["Cut your lifestyle", 3000, -5, 8],
-            ["Ask for a raise", 3000, 0, 12],
-            ["Borrow to maintain your lifestyle", 5000, 0, 15]
-        ]
-    },
-
-    {
-        year: 2022,
-        title: "Your Salary Feels Smaller",
-        text:
-        "You receive the same amount of money as before. Somehow, it buys less.",
-        choices: [
-            ["Work overtime", 5000, -5, 12],
-            ["Reduce expenses", 2000, -5, 8],
-            ["Borrow money", 5000, 0, 15]
-        ]
-    },
-
-    {
-        year: 2022,
-        title: "The Interest Rate Problem",
-        text:
-        "Borrowing becomes more expensive. Your existing debt suddenly matters much more.",
-        choices: [
-            ["Pay down debt", -5000, 0, -5],
-            ["Refinance", 3000, 0, 8],
-            ["Ignore it", 0, 0, 15]
-        ]
-    },
-
-
-    /* 2023 */
-
-    {
-        year: 2023,
-        title: "Debt Trap",
-        text:
-        "Your monthly payments are eating more of your salary.",
-        choices: [
-            ["Aggressively repay debt", -7000, -3, -8],
-            ["Pay minimum", -3000, 0, 5],
-            ["Borrow again", 5000, 0, 15]
-        ]
-    },
-
-    {
-        year: 2023,
-        title: "The Second Job",
-        text:
-        "A friend suggests working nights to increase your income.",
-        choices: [
-            ["Take the second job", 8000, -10, 20],
-            ["Protect your health", 0, 5, -8],
-            ["Start an online business", 4000, -5, 15]
-        ]
-    },
-
-
-    /* 2024 */
-
-    {
-        year: 2024,
-        title: "Cost Of Living",
-        text:
-        "Your income has increased over the years. But so have rent, food, transport and everything else.",
-        choices: [
-            ["Move somewhere cheaper", 3000, -5, 8],
-            ["Accept higher rent", -4000, 0, 5],
-            ["Move back with family", 5000, 5, -10]
-        ]
-    },
-
-    {
-        year: 2024,
-        title: "A Question About Money",
-        text:
-        "You begin asking a question you never thought about before: what actually gives money its value?",
-        choices: [
-            ["Ignore the question", 0, 0, 0],
-            ["Study monetary history", -500, 0, -5],
-            ["Study Bitcoin", -500, 0, -5]
-        ]
-    },
-
-
-    /* 2025 */
-
-    {
-        year: 2025,
-        title: "The Old System",
-        text:
-        "You read about banking crises, monetary policy and the consequences of financial instability.",
-        choices: [
-            ["Learn more", 0, 0, -5],
-            ["Focus only on earning", 2000, 0, 5],
-            ["Stop caring", 0, -5, 10]
-        ]
-    },
-
-    {
-        year: 2025,
-        title: "A Strange Idea",
-        text:
-        "You discover a digital monetary network designed to operate without a central authority.",
-        choices: [
-            ["Study how it works", -500, 0, -5],
-            ["Dismiss it", 0, 0, 0],
-            ["Buy a tiny amount", -1000, 0, 5]
-        ]
-    },
-
-    {
-        year: 2025,
-        title: "The Newspaper",
-        text:
-        "You learn about the financial crisis of 2008 and the ideas that followed it.",
-        choices: [
-            ["Read the history", 0, 0, -8],
-            ["Ignore it", 0, 0, 3],
-            ["Research alternative money", -500, 0, -10]
-        ]
-    },
-
-
-    /* FINAL */
-
-    {
-        year: 2026,
-        title: "What Is Money?",
-        text:
-        "After years of surviving inflation, debt and uncertainty, you finally understand that the game was never only about earning more.",
-        choices: [
-            ["Keep learning", 0, 5, -15],
-            ["Return to normal life", 5000, 0, -5],
-            ["Build your own financial system", -2000, 0, -10]
-        ]
+        name: "BANK",
+        x: 700,
+        y: 570,
+        w: 250,
+        h: 150,
+        color: "#252525",
+        type: "bank"
     }
 
 ];
 
 
-/* =====================================================
-   START
-===================================================== */
+/* =========================
+   CAMERA
+========================= */
 
-function startGame() {
-
-    document
-        .getElementById("introScreen")
-        .classList.remove("active");
-
-    document
-        .getElementById("gameScreen")
-        .classList.add("active");
-
-    updateUI();
-
-    startMonth();
-}
+let camera = {
+    x: 0,
+    y: 0
+};
 
 
-/* =====================================================
-   MONTH ENGINE
-===================================================== */
+/* =========================
+   DRAW
+========================= */
 
-function startMonth() {
+function draw() {
 
-    calculateInflation();
-
-    receiveIncome();
-
-    payExpenses();
-
-    calculateDebt();
-
-    updateJobSecurity();
-
-    updateUI();
-
-    checkGameState();
-
-    if (!document
-        .getElementById("gameScreen")
-        .classList.contains("active")) {
-        return;
-    }
-
-    showMonthlyEvent();
-}
+    ctx.clearRect(
+        0,
+        0,
+        W,
+        H
+    );
 
 
-/* =====================================================
-   INFLATION
-===================================================== */
+    camera.x =
+        player.x - W / 2;
 
-function calculateInflation() {
+    camera.y =
+        player.y - H / 2;
 
-    let base;
 
-    if (player.year === 2019) {
-        base = 4;
-    }
+    drawWorld();
 
-    else if (player.year === 2020) {
-        base = 4.5;
-    }
+    drawBuildings();
 
-    else if (player.year === 2021) {
-        base = 5;
-    }
-
-    else if (player.year === 2022) {
-        base = 7;
-    }
-
-    else if (player.year === 2023) {
-        base = 6;
-    }
-
-    else if (player.year === 2024) {
-        base = 5;
-    }
-
-    else {
-        base = 4;
-    }
-
-    player.inflation =
-        base + (Math.random() * 1.5 - 0.5);
+    drawPlayer();
 
 }
 
 
-/* =====================================================
-   INCOME
-===================================================== */
+/* =========================
+   WORLD
+========================= */
 
-function receiveIncome() {
+function drawWorld() {
 
-    let incomeMultiplier = 1;
+    ctx.fillStyle = "#111";
+
+    ctx.fillRect(
+        0,
+        0,
+        W,
+        H
+    );
+
 
     /*
-       Salary grows slowly.
-       Prices can grow faster.
+       ROAD GRID
     */
 
-    if (player.year === 2021) {
-        incomeMultiplier = 1.03;
+    ctx.strokeStyle = "#1b1b1b";
+
+    ctx.lineWidth = 2;
+
+
+    for (
+        let x = -camera.x % 80;
+        x < W;
+        x += 80
+    ) {
+
+        ctx.beginPath();
+
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, H);
+
+        ctx.stroke();
+
     }
 
-    if (player.year === 2022) {
-        incomeMultiplier = 1.02;
+
+    for (
+        let y = -camera.y % 80;
+        y < H;
+        y += 80
+    ) {
+
+        ctx.beginPath();
+
+        ctx.moveTo(0, y);
+        ctx.lineTo(W, y);
+
+        ctx.stroke();
+
     }
-
-    if (player.year === 2023) {
-        incomeMultiplier = 1.03;
-    }
-
-    if (player.year === 2024) {
-        incomeMultiplier = 1.04;
-    }
-
-    if (player.year >= 2025) {
-        incomeMultiplier = 1.04;
-    }
-
-    player.income =
-        Math.round(
-            player.income *
-            incomeMultiplier
-        );
-
-    player.cash += player.income;
 
 }
 
 
-/* =====================================================
-   EXPENSES
-===================================================== */
+/* =========================
+   BUILDINGS
+========================= */
 
-function payExpenses() {
+function drawBuildings() {
 
-    let inflationMultiplier =
-        1 + (player.inflation / 100);
+    buildings.forEach(b => {
 
-    let rent =
-        Math.round(
-            player.rent *
-            inflationMultiplier
+        const x =
+            b.x - camera.x;
+
+        const y =
+            b.y - camera.y;
+
+
+        ctx.fillStyle =
+            b.color;
+
+        ctx.fillRect(
+            x,
+            y,
+            b.w,
+            b.h
         );
 
-    let food =
-        Math.round(
-            player.food *
-            inflationMultiplier
+
+        ctx.strokeStyle =
+            "#555";
+
+        ctx.strokeRect(
+            x,
+            y,
+            b.w,
+            b.h
         );
 
-    let transport =
-        Math.round(
-            2500 *
-            inflationMultiplier
+
+        ctx.fillStyle =
+            "#aaa";
+
+        ctx.font =
+            "bold 14px Arial";
+
+        ctx.textAlign =
+            "center";
+
+
+        ctx.fillText(
+            b.name,
+            x + b.w / 2,
+            y + b.h / 2
         );
 
-    let total =
-        rent +
-        food +
-        transport;
 
-    player.cash -= total;
+        ctx.textAlign =
+            "left";
 
-    player.expenses = total;
+    });
 
 }
 
 
-/* =====================================================
-   DEBT
-===================================================== */
+/* =========================
+   PLAYER
+========================= */
 
-function calculateDebt() {
+function drawPlayer() {
 
-    if (player.debt <= 0) {
-        return;
-    }
+    const x =
+        player.x - camera.x;
 
-    /*
-       3% monthly interest.
-       Debt becomes dangerous very quickly.
-    */
-
-    let interest =
-        Math.round(
-            player.debt * 0.03
-        );
-
-    player.debt += interest;
-
-}
+    const y =
+        player.y - camera.y;
 
 
-/* =====================================================
-   JOB SECURITY
-===================================================== */
+    /* shadow */
 
-function updateJobSecurity() {
+    ctx.fillStyle =
+        "rgba(0,0,0,.5)";
 
-    if (player.year === 2020) {
+    ctx.beginPath();
 
-        player.jobSecurity -= 2;
+    ctx.ellipse(
+        x,
+        y + 12,
+        12,
+        5,
+        0,
+        0,
+        Math.PI * 2
+    );
 
-    }
-
-    if (player.year === 2022) {
-
-        player.jobSecurity -= 1;
-
-    }
-
-    player.jobSecurity =
-        Math.max(
-            0,
-            Math.min(
-                100,
-                player.jobSecurity
-            )
-        );
-
-}
+    ctx.fill();
 
 
-/* =====================================================
-   EVENT SELECTION
-===================================================== */
+    /* body */
 
-function showMonthlyEvent() {
+    ctx.fillStyle =
+        "#f5f5f5";
 
-    let available =
-        historicalEvents.filter(
-            event =>
-                event.year === player.year
-        );
+    ctx.fillRect(
+        x - 8,
+        y - 8,
+        16,
+        20
+    );
 
-    /*
-       If no event exists for current year,
-       create a generic event.
-    */
 
-    if (available.length === 0) {
+    /* head */
 
-        showGenericEvent();
+    ctx.fillStyle =
+        "#d0d0d0";
 
-        return;
+    ctx.beginPath();
 
-    }
+    ctx.arc(
+        x,
+        y - 14,
+        8,
+        0,
+        Math.PI * 2
+    );
 
-    let event =
-        available[
-            Math.floor(
-                Math.random() *
-                available.length
-            )
-        ];
-
-    displayEvent(event);
+    ctx.fill();
 
 }
 
 
-/* =====================================================
-   GENERIC EVENT
-===================================================== */
+/* =========================
+   MOVEMENT
+========================= */
 
-function showGenericEvent() {
+function updatePlayer() {
 
-    let generic = {
-
-        title: "Another Ordinary Month",
-
-        text:
-        "Nothing dramatic happens this month. But your bills still arrive.",
-
-        choices: [
-
-            [
-                "Save money",
-                2000,
-                0,
-                2
-            ],
-
-            [
-                "Work harder",
-                4000,
-                -5,
-                8
-            ],
-
-            [
-                "Enjoy yourself",
-                -3000,
-                5,
-                -8
-            ]
-
-        ]
-
-    };
-
-    displayEvent(generic);
-
-}
+    let dx = 0;
+    let dy = 0;
 
 
-/* =====================================================
-   DISPLAY EVENT
-===================================================== */
-
-function displayEvent(event) {
-
-    document
-        .getElementById("eventTitle")
-        .innerText =
-        event.title;
-
-    document
-        .getElementById("eventText")
-        .innerText =
-        event.text;
-
-    let choices =
-        document.getElementById("choices");
-
-    choices.innerHTML = "";
-
-    event.choices.forEach(
-        (choice, index) => {
-
-            let button =
-                document.createElement(
-                    "button"
-                );
-
-            let money =
-                choice[1];
-
-            let health =
-                choice[2];
-
-            let stress =
-                choice[3];
+    if (
+        keys["w"] ||
+        keys["arrowup"]
+    ) dy -= 1;
 
 
-            button.innerHTML = `
-
-                ${choice[0]}
-
-                <small>
-
-                Money:
-                ${money >= 0 ? "+" : ""}
-                ₹${Math.abs(money)}
-
-                |
-                Health:
-                ${health >= 0 ? "+" : ""}
-                ${health}
-
-                |
-                Stress:
-                ${stress >= 0 ? "+" : ""}
-                ${stress}
-
-                </small>
-            `;
+    if (
+        keys["s"] ||
+        keys["arrowdown"]
+    ) dy += 1;
 
 
-            button.onclick =
-                function () {
-
-                    makeChoice(
-                        choice
-                    );
-
-                };
+    if (
+        keys["a"] ||
+        keys["arrowleft"]
+    ) dx -= 1;
 
 
-            choices.appendChild(
-                button
+    if (
+        keys["d"] ||
+        keys["arrowright"]
+    ) dx += 1;
+
+
+    if (dx || dy) {
+
+        const length =
+            Math.sqrt(
+                dx * dx +
+                dy * dy
             );
 
-        }
-    );
+        dx /= length;
+        dy /= length;
+
+
+        player.x +=
+            dx * player.speed;
+
+        player.y +=
+            dy * player.speed;
+
+    }
 
 }
 
 
-/* =====================================================
-   PLAYER CHOICE
-===================================================== */
+/* =========================
+   TIME
+========================= */
 
-function makeChoice(choice) {
+let lastTime = Date.now();
 
-    let money =
-        choice[1];
+function updateTime() {
 
-    let health =
-        choice[2];
+    const now = Date.now();
 
-    let stress =
-        choice[3];
+    if (now - lastTime < 1000)
+        return;
+
+    lastTime = now;
+
+    player.minute += 10;
 
 
-    /*
-       MONEY
-    */
+    if (player.minute >= 60) {
 
-    if (money >= 0) {
+        player.minute = 0;
 
-        player.cash += money;
-
-    }
-
-    else {
-
-        let cost =
-            Math.abs(money);
-
-        if (player.cash >= cost) {
-
-            player.cash -= cost;
-
-        }
-
-        else {
-
-            let shortage =
-                cost -
-                player.cash;
-
-            player.cash = 0;
-
-            player.debt +=
-                shortage;
-
-        }
+        player.hour++;
 
     }
 
 
+    if (player.hour >= 24) {
+
+        player.hour = 0;
+
+        nextDay();
+
+    }
+
+
+    updateHUD();
+
+}
+
+
+function nextDay() {
+
     /*
-       HEALTH
+       Later this becomes
+       the complete daily
+       economic simulation.
     */
 
-    player.health += health;
+}
 
 
-    /*
-       STRESS
-    */
+/* =========================
+   INTERACTION
+========================= */
 
-    player.stress += stress;
+let nearbyBuilding = null;
 
 
-    /*
-       SPECIAL KNOWLEDGE
-    */
+function checkNearby() {
 
-    let currentTitle =
+    nearbyBuilding = null;
+
+
+    buildings.forEach(b => {
+
+        const centerX =
+            b.x + b.w / 2;
+
+        const centerY =
+            b.y + b.h / 2;
+
+
+        const distance =
+            Math.hypot(
+                player.x - centerX,
+                player.y - centerY
+            );
+
+
+        if (distance < 150) {
+
+            nearbyBuilding = b;
+
+        }
+
+    });
+
+
+    const box =
+        document.getElementById(
+            "interaction"
+        );
+
+
+    if (nearbyBuilding) {
+
+        box.style.display =
+            "block";
+
         document
-        .getElementById("eventTitle")
-        .innerText;
-
-
-    if (
-        currentTitle
-        .toLowerCase()
-        .includes("bitcoin")
-    ) {
-
-        player.bitcoinKnowledge += 10;
-
-    }
-
-
-    if (
-        currentTitle
-        .toLowerCase()
-        .includes("money")
-        ||
-        currentTitle
-        .toLowerCase()
-        .includes("history")
-    ) {
-
-        player.knowledge += 5;
-
-    }
-
-
-    /*
-       LIMITS
-    */
-
-    player.health =
-        Math.max(
-            0,
-            Math.min(
-                100,
-                player.health
+            .getElementById(
+                "interactionText"
             )
-        );
+            .innerText =
+            `E — ${nearbyBuilding.name}`;
 
-    player.stress =
-        Math.max(
-            0,
-            Math.min(
-                100,
-                player.stress
-            )
-        );
+    } else {
 
-
-    addLog(
-        `You chose: ${choice[0]}`
-    );
-
-
-    /*
-       NEXT MONTH
-    */
-
-    advanceMonth();
-
-}
-
-
-/* =====================================================
-   ADVANCE
-===================================================== */
-
-function advanceMonth() {
-
-    player.month++;
-
-    /*
-       12 months = new year
-    */
-
-    if (
-        player.month > 12
-    ) {
-
-        player.month = 1;
-
-        player.year++;
-
-    }
-
-
-    /*
-       Game ends after 2026 story.
-    */
-
-    if (
-        player.year > 2026
-    ) {
-
-        finishGame();
-
-        return;
-
-    }
-
-
-    startMonth();
-
-}
-
-
-/* =====================================================
-   GAME STATE
-===================================================== */
-
-function checkGameState() {
-
-    /*
-       BANKRUPTCY
-    */
-
-    if (
-        player.cash <= 0 &&
-        player.debt >= 100000
-    ) {
-
-        endGame(
-            "BANKRUPT",
-            "Your debt has grown faster than your ability to repay it.",
-            "💀"
-        );
-
-        return;
-
-    }
-
-
-    /*
-       HEALTH
-    */
-
-    if (
-        player.health <= 0
-    ) {
-
-        endGame(
-            "YOU BROKE DOWN",
-            "The financial pressure finally destroyed your ability to keep going.",
-            "🫥"
-        );
-
-        return;
-
-    }
-
-
-    /*
-       STRESS
-    */
-
-    if (
-        player.stress >= 100
-    ) {
-
-        endGame(
-            "MENTAL BREAKDOWN",
-            "You survived the bills, but the pressure became unbearable.",
-            "😵"
-        );
-
-        return;
+        box.style.display =
+            "none";
 
     }
 
 }
 
 
-/* =====================================================
-   FINAL ENDING
-===================================================== */
+function interact() {
 
-function finishGame() {
-
-    let title;
-    let text;
-    let icon;
+    if (!nearbyBuilding)
+        return;
 
 
-    /*
-       BEST ENDING
-    */
-
-    if (
-        player.debt < 20000 &&
-        player.cash > 50000 &&
-        player.knowledge >= 15
+    switch (
+        nearbyBuilding.type
     ) {
 
-        title =
-            "FINANCIAL SURVIVOR";
+        case "home":
 
-        text =
-            "You didn't become rich. You became harder to break.";
+            message(
+                "You are home. Rest restores health."
+            );
 
-        icon =
-            "🏆";
+            player.health =
+                Math.min(
+                    100,
+                    player.health + 5
+                );
+
+            player.stress =
+                Math.max(
+                    0,
+                    player.stress - 5
+                );
+
+            break;
+
+
+        case "work":
+
+            message(
+                "You worked today. +₹1,000"
+            );
+
+            player.cash += 1000;
+
+            player.stress += 3;
+
+            break;
+
+
+        case "shop":
+
+            if (player.cash >= 500) {
+
+                player.cash -= 500;
+
+                message(
+                    "You bought groceries. -₹500"
+                );
+
+                player.health =
+                    Math.min(
+                        100,
+                        player.health + 3
+                    );
+
+            } else {
+
+                message(
+                    "You don't have enough money."
+                );
+
+            }
+
+            break;
+
+
+        case "bank":
+
+            message(
+                "The bank is where your debt begins..."
+            );
+
+            break;
 
     }
 
 
-    /*
-       BITCOIN DISCOVERY ENDING
-    */
-
-    else if (
-        player.bitcoinKnowledge >= 20
-    ) {
-
-        title =
-            "THE OTHER SIDE OF MONEY";
-
-        text =
-            "You started looking beyond the traditional financial system. The question was no longer only how to earn money — but who controls it.";
-
-        icon =
-            "₿";
-
-    }
-
-
-    /*
-       NORMAL SURVIVAL
-    */
-
-    else {
-
-        title =
-            "YOU SURVIVED";
-
-        text =
-            "Five years passed. You learned that surviving an economy can be harder than surviving a job.";
-
-        icon =
-            "🧍";
-
-    }
-
-
-    endGame(
-        title,
-        text,
-        icon
-    );
+    updateHUD();
 
 }
 
 
-/* =====================================================
-   END SCREEN
-===================================================== */
+/* =========================
+   MESSAGE
+========================= */
 
-function endGame(
-    title,
-    text,
-    icon
-) {
-
-    document
-        .getElementById("gameScreen")
-        .classList.remove("active");
-
-    document
-        .getElementById("endScreen")
-        .classList.add("active");
+let messageTimer;
 
 
-    document
-        .getElementById("endIcon")
-        .innerText =
-        icon;
+function message(text) {
 
+    const el =
+        document.getElementById(
+            "message"
+        );
 
-    document
-        .getElementById("endTitle")
-        .innerText =
-        title;
-
-
-    document
-        .getElementById("endText")
-        .innerText =
+    el.innerText =
         text;
 
-
-    document
-        .getElementById("finalMonth")
-        .innerText =
-        player.year;
+    el.classList.add("show");
 
 
-    document
-        .getElementById("finalCash")
-        .innerText =
-        money(player.cash);
+    clearTimeout(messageTimer);
 
 
-    document
-        .getElementById("finalDebt")
-        .innerText =
-        money(player.debt);
+    messageTimer =
+        setTimeout(
+            () =>
+                el.classList.remove("show"),
+            2500
+        );
 
 }
 
 
-/* =====================================================
-   UI
-===================================================== */
+/* =========================
+   HUD
+========================= */
 
-function updateUI() {
+function updateHUD() {
+
+    const months = [
+
+        "JAN",
+        "FEB",
+        "MAR",
+        "APR",
+        "MAY",
+        "JUN",
+        "JUL",
+        "AUG",
+        "SEP",
+        "OCT",
+        "NOV",
+        "DEC"
+
+    ];
+
 
     document
-        .getElementById("month")
+        .getElementById("date")
         .innerText =
-        `${player.month}/${player.year}`;
+        `${months[player.month - 1]} ${player.year}`;
+
+
+    document
+        .getElementById("time")
+        .innerText =
+        `${String(player.hour).padStart(2,"0")}:${String(player.minute).padStart(2,"0")}`;
 
 
     document
         .getElementById("cash")
         .innerText =
-        money(player.cash);
-
-
-    document
-        .getElementById("income")
-        .innerText =
-        money(player.income);
-
-
-    document
-        .getElementById("debt")
-        .innerText =
-        money(player.debt);
-
-
-    document
-        .getElementById("inflation")
-        .innerText =
-        player.inflation
-        .toFixed(1)
-        + "%";
+        "₹" +
+        player.cash.toLocaleString("en-IN");
 
 
     document
@@ -1110,99 +726,28 @@ function updateUI() {
         .innerText =
         player.stress;
 
-
-    document
-        .getElementById("healthBar")
-        .style.width =
-        player.health
-        + "%";
+}
 
 
-    document
-        .getElementById("stressBar")
-        .style.width =
-        player.stress
-        + "%";
+/* =========================
+   GAME LOOP
+========================= */
 
+function loop() {
 
-    document
-        .getElementById("storyDate")
-        .innerText =
-        `${monthName(player.month)} ${player.year}`;
+    updatePlayer();
 
-   document.getElementById("month").innerText = `${player.month}/${player.year}`;
+    checkNearby();
+
+    updateTime();
+
+    draw();
+
+    requestAnimationFrame(loop);
 
 }
 
 
-/* =====================================================
-   MONTH NAME
-===================================================== */
+updateHUD();
 
-function monthName(month) {
-
-    const names = [
-
-        "JANUARY",
-        "FEBRUARY",
-        "MARCH",
-        "APRIL",
-        "MAY",
-        "JUNE",
-        "JULY",
-        "AUGUST",
-        "SEPTEMBER",
-        "OCTOBER",
-        "NOVEMBER",
-        "DECEMBER"
-
-    ];
-
-    return names[
-        month - 1
-    ];
-
-}
-
-
-/* =====================================================
-   MONEY
-===================================================== */
-
-function money(value) {
-
-    return (
-        "₹" +
-        Math.round(value)
-            .toLocaleString("en-IN")
-    );
-
-}
-
-
-/* =====================================================
-   LOG
-===================================================== */
-
-function addLog(text) {
-
-    let log =
-        document
-        .getElementById("logContent");
-
-
-    let entry =
-        document.createElement(
-            "div"
-        );
-
-
-    entry.innerText =
-        "› " + text;
-
-
-    log.prepend(
-        entry
-    );
-
-}
+loop();
