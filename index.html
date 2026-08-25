@@ -2,81 +2,78 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
 <title>BANKRUPT — Day 1</title>
 
 <style>
+
 *{
-    box-sizing:border-box;
-    margin:0;
-    padding:0;
+box-sizing:border-box;
+margin:0;
+padding:0;
 }
 
 body{
-    overflow:hidden;
-    background:#111;
-    font-family:Arial,sans-serif;
+overflow:hidden;
+background:#111;
+font-family:Arial,sans-serif;
 }
 
 #game{
-    position:relative;
-    width:100vw;
-    height:100vh;
-    overflow:hidden;
-    background:#8fb3c9;
+position:relative;
+width:100vw;
+height:100vh;
+overflow:hidden;
+background:#8fb3c9;
 }
-
-/* WORLD */
 
 #world{
-    position:absolute;
-    width:3000px;
-    height:1200px;
+position:absolute;
+width:3000px;
+height:1200px;
 }
-
-/* SKY */
 
 .sky{
-    position:absolute;
-    width:3000px;
-    height:700px;
-    background:linear-gradient(#7fa9bd,#d4d9d2);
+position:absolute;
+width:3000px;
+height:700px;
+background:linear-gradient(#7fa9bd,#d4d9d2);
 }
-
-/* GROUND */
 
 .ground{
-    position:absolute;
-    left:0;
-    top:700px;
-    width:3000px;
-    height:500px;
-    background:#303030;
-    border-top:8px solid #181818;
+position:absolute;
+left:0;
+top:700px;
+width:3000px;
+height:500px;
+background:#303030;
+border-top:8px solid #181818;
 }
-
-/* SIDEWALK */
 
 .sidewalk{
-    position:absolute;
-    left:0;
-    top:650px;
-    width:3000px;
-    height:50px;
-    background:#777;
-    border-top:5px solid #999;
-    border-bottom:5px solid #444;
+position:absolute;
+left:0;
+top:650px;
+width:3000px;
+height:50px;
+background:#777;
+border-top:5px solid #999;
+border-bottom:5px solid #444;
 }
 
-/* ROAD MARKINGS */
+/* ROAD */
 
 .line{
-    position:absolute;
-    top:850px;
-    width:120px;
-    height:10px;
-    background:#aaa;
+position:absolute;
+top:850px;
+width:120px;
+height:10px;
+background:#aaa;
 }
 
 .line1{left:200px}
@@ -92,49 +89,48 @@ body{
 /* BUILDINGS */
 
 .building{
-    position:absolute;
-    top:300px;
-    width:300px;
-    height:350px;
-    border:8px solid #222;
-    background:#555;
-    color:white;
-    font-weight:bold;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:26px;
-    text-align:center;
+position:absolute;
+top:300px;
+width:300px;
+height:350px;
+border:8px solid #222;
+color:white;
+font-weight:bold;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:26px;
+text-align:center;
 }
 
 .home{
-    left:150px;
-    background:#59616a;
+left:150px;
+background:#59616a;
 }
 
 .shop{
-    left:850px;
-    background:#514c45;
+left:850px;
+background:#514c45;
 }
 
 .job{
-    left:1550px;
-    background:#454545;
+left:1550px;
+background:#454545;
 }
 
 .bank{
-    left:2250px;
-    background:#3d4147;
+left:2250px;
+background:#3d4147;
 }
 
 /* WINDOWS */
 
 .window{
-    position:absolute;
-    width:55px;
-    height:70px;
-    background:#9cc4d2;
-    border:5px solid #222;
+position:absolute;
+width:55px;
+height:70px;
+background:#9cc4d2;
+border:5px solid #222;
 }
 
 .w1{left:200px;top:350px}
@@ -149,170 +145,194 @@ body{
 /* PLAYER */
 
 #player{
-    position:absolute;
-    width:46px;
-    height:70px;
-    left:350px;
-    top:580px;
-    z-index:20;
+position:absolute;
+width:46px;
+height:70px;
+left:350px;
+top:580px;
+z-index:20;
 }
-
-/* HEAD */
 
 .head{
-    position:absolute;
-    width:30px;
-    height:30px;
-    left:8px;
-    top:0;
-    border-radius:50%;
-    background:#d9a07b;
-    border:3px solid #111;
+position:absolute;
+width:30px;
+height:30px;
+left:8px;
+top:0;
+border-radius:50%;
+background:#d9a07b;
+border:3px solid #111;
 }
-
-/* BODY */
 
 .body{
-    position:absolute;
-    width:38px;
-    height:35px;
-    left:4px;
-    top:28px;
-    background:#222;
-    border:3px solid #111;
+position:absolute;
+width:38px;
+height:35px;
+left:4px;
+top:28px;
+background:#222;
+border:3px solid #111;
 }
 
-/* LEGS */
-
 .leg{
-    position:absolute;
-    width:12px;
-    height:20px;
-    top:58px;
-    background:#333;
-    border:2px solid #111;
+position:absolute;
+width:12px;
+height:20px;
+top:58px;
+background:#333;
+border:2px solid #111;
 }
 
 .leg.left{
-    left:8px;
+left:8px;
 }
 
 .leg.right{
-    right:8px;
+right:8px;
 }
 
 /* HUD */
 
 #hud{
-    position:fixed;
-    top:15px;
-    left:15px;
-    z-index:100;
-    min-width:220px;
-    padding:14px;
-    color:white;
-    background:rgba(0,0,0,.88);
-    border:2px solid #555;
-    border-radius:10px;
+position:fixed;
+top:15px;
+left:15px;
+z-index:100;
+min-width:220px;
+padding:14px;
+color:white;
+background:rgba(0,0,0,.88);
+border:2px solid #555;
+border-radius:10px;
 }
 
 #hud h1{
-    font-size:20px;
-    margin-bottom:10px;
+font-size:20px;
+margin-bottom:10px;
 }
 
 .stat{
-    margin:5px 0;
-    font-size:14px;
+margin:5px 0;
+font-size:14px;
 }
 
 /* MISSION */
 
 #mission{
-    position:fixed;
-    top:15px;
-    left:50%;
-    transform:translateX(-50%);
-    z-index:100;
-    padding:12px 20px;
-    color:white;
-    background:rgba(0,0,0,.88);
-    border:2px solid #555;
-    border-radius:10px;
-    text-align:center;
+position:fixed;
+top:15px;
+left:50%;
+transform:translateX(-50%);
+z-index:100;
+padding:12px 20px;
+color:white;
+background:rgba(0,0,0,.88);
+border:2px solid #555;
+border-radius:10px;
+text-align:center;
 }
 
 #mission small{
-    display:block;
-    color:#aaa;
-    margin-top:5px;
+display:block;
+color:#aaa;
+margin-top:5px;
 }
 
 /* MESSAGE */
 
 #message{
-    position:fixed;
-    left:50%;
-    bottom:130px;
-    transform:translateX(-50%);
-    z-index:100;
-    color:white;
-    background:rgba(0,0,0,.9);
-    padding:12px 20px;
-    border-radius:10px;
-    display:none;
+position:fixed;
+left:50%;
+bottom:140px;
+transform:translateX(-50%);
+z-index:300;
+color:white;
+background:rgba(0,0,0,.94);
+padding:18px 25px;
+border-radius:12px;
+border:2px solid #666;
+text-align:center;
+display:none;
 }
 
 /* CONTROLS */
 
 #controls{
-    position:fixed;
-    bottom:20px;
-    left:20px;
-    z-index:200;
-    display:grid;
-    grid-template-columns:65px 65px 65px;
-    gap:8px;
+position:fixed;
+bottom:20px;
+left:20px;
+z-index:200;
+display:grid;
+grid-template-columns:65px 65px 65px;
+gap:8px;
 }
 
 .control{
-    width:65px;
-    height:65px;
-    border-radius:15px;
-    border:2px solid #777;
-    background:rgba(0,0,0,.75);
-    color:white;
-    font-size:25px;
-    touch-action:none;
+width:65px;
+height:65px;
+border-radius:15px;
+border:2px solid #777;
+background:rgba(0,0,0,.75);
+color:white;
+font-size:25px;
+touch-action:none;
 }
 
 .empty{
-    visibility:hidden;
+visibility:hidden;
 }
+
+/* JUMP */
 
 #jump{
-    position:fixed;
-    bottom:30px;
-    right:25px;
-    z-index:200;
-    width:90px;
-    height:90px;
-    border-radius:50%;
-    border:3px solid #777;
-    background:rgba(0,0,0,.75);
-    color:white;
-    font-size:18px;
-    font-weight:bold;
-    touch-action:none;
+position:fixed;
+bottom:30px;
+right:25px;
+z-index:200;
+width:90px;
+height:90px;
+border-radius:50%;
+border:3px solid #777;
+background:rgba(0,0,0,.75);
+color:white;
+font-size:18px;
+font-weight:bold;
+touch-action:none;
 }
 
-@media(min-width:800px){
-    #controls,
-    #jump{
-        display:none;
-    }
+/* INTERACT */
+
+#interact{
+position:fixed;
+bottom:135px;
+right:25px;
+z-index:200;
+width:110px;
+height:55px;
+border-radius:15px;
+border:3px solid #aaa;
+background:rgba(0,0,0,.9);
+color:white;
+font-size:14px;
+font-weight:bold;
+display:none;
+touch-action:none;
 }
+
+/* DESKTOP */
+
+@media(min-width:800px){
+
+#controls,
+#jump,
+#interact{
+display:none !important;
+}
+
+}
+
 </style>
+
 </head>
 
 <body>
@@ -321,59 +341,66 @@ body{
 
 <div id="world">
 
-    <div class="sky"></div>
+<div class="sky"></div>
 
-    <div class="building home">
-        HOME
-    </div>
+<!-- BUILDINGS -->
 
-    <div class="building shop">
-        GROCERY<br>
-        STORE
-    </div>
+<div class="building home">
+🏠<br>HOME
+</div>
 
-    <div class="building job">
-        JOB<br>
-        CENTER
-    </div>
+<div class="building shop">
+🛒<br>GROCERY<br>STORE
+</div>
 
-    <div class="building bank">
-        BANK
-    </div>
+<div class="building job">
+🏢<br>JOB<br>CENTER
+</div>
 
-    <div class="window w1"></div>
-    <div class="window w2"></div>
-    <div class="window w3"></div>
-    <div class="window w4"></div>
-    <div class="window w5"></div>
-    <div class="window w6"></div>
-    <div class="window w7"></div>
-    <div class="window w8"></div>
+<div class="building bank">
+🏦<br>BANK
+</div>
 
-    <div class="sidewalk"></div>
-    <div class="ground"></div>
+<!-- WINDOWS -->
 
-    <div class="line line1"></div>
-    <div class="line line2"></div>
-    <div class="line line3"></div>
-    <div class="line line4"></div>
-    <div class="line line5"></div>
-    <div class="line line6"></div>
-    <div class="line line7"></div>
-    <div class="line line8"></div>
-    <div class="line line9"></div>
+<div class="window w1"></div>
+<div class="window w2"></div>
+<div class="window w3"></div>
+<div class="window w4"></div>
+<div class="window w5"></div>
+<div class="window w6"></div>
+<div class="window w7"></div>
+<div class="window w8"></div>
 
-    <!-- PLAYER -->
+<!-- WORLD -->
 
-    <div id="player">
+<div class="sidewalk"></div>
 
-        <div class="head"></div>
-        <div class="body"></div>
+<div class="ground"></div>
 
-        <div class="leg left"></div>
-        <div class="leg right"></div>
+<div class="line line1"></div>
+<div class="line line2"></div>
+<div class="line line3"></div>
+<div class="line line4"></div>
+<div class="line line5"></div>
+<div class="line line6"></div>
+<div class="line line7"></div>
+<div class="line line8"></div>
+<div class="line line9"></div>
 
-    </div>
+<!-- PLAYER -->
+
+<div id="player">
+
+<div class="head"></div>
+
+<div class="body"></div>
+
+<div class="leg left"></div>
+
+<div class="leg right"></div>
+
+</div>
 
 </div>
 
@@ -386,11 +413,25 @@ body{
 
 <h1>💀 BANKRUPT</h1>
 
-<div class="stat">💵 Money: $500</div>
-<div class="stat">🍔 Hunger: 100%</div>
-<div class="stat">⚡ Energy: 100%</div>
-<div class="stat">💳 Debt: $0</div>
-<div class="stat">📅 Day: 1</div>
+<div class="stat">
+💵 Money: $<span id="money">500</span>
+</div>
+
+<div class="stat">
+🍔 Hunger: <span id="hunger">100</span>%
+</div>
+
+<div class="stat">
+⚡ Energy: <span id="energy">100</span>%
+</div>
+
+<div class="stat">
+💳 Debt: $<span id="debt">0</span>
+</div>
+
+<div class="stat">
+📅 Day: <span id="day">1</span>
+</div>
 
 </div>
 
@@ -399,352 +440,566 @@ body{
 
 <div id="mission">
 
-<strong>MISSION: FIND A JOB</strong>
+<strong id="missionTitle">
+MISSION: FIND A JOB
+</strong>
 
-<small>
+<small id="missionText">
 Walk right → Job Center
 </small>
 
 </div>
 
 
+<!-- MESSAGE -->
+
 <div id="message"></div>
 
 
-<!-- MOBILE -->
+<!-- MOBILE CONTROLS -->
 
 <div id="controls">
 
 <button class="control empty"></button>
-<button class="control" id="left">◀</button>
+
+<button class="control" id="left">
+◀
+</button>
+
 <button class="control empty"></button>
 
 <button class="control empty"></button>
-<button class="control" id="right">▶</button>
+
+<button class="control" id="right">
+▶
+</button>
+
 <button class="control empty"></button>
 
 </div>
 
-<button id="jump">JUMP</button>
-    <button id="interact">INTERACT</button>
+
+<button id="jump">
+JUMP
+</button>
+
+
+<button id="interact">
+INTERACT
+</button>
 
 
 <script>
 
-/* PLAYER */
+/* =========================
+PLAYER
+========================= */
 
-const player = document.getElementById("player");
-const world = document.getElementById("world");
-const message = document.getElementById("message");
+const player =
+document.getElementById("player");
+
+const world =
+document.getElementById("world");
+
+const interactButton =
+document.getElementById("interact");
+
+const message =
+document.getElementById("message");
 
 let x = 350;
+
 let y = 580;
 
 let velocityY = 0;
 
-let speed = 6;
+const speed = 6;
 
-let gravity = 0.8;
+const gravity = 0.8;
 
-let jumpPower = -15;
+const jumpPower = -15;
 
 let onGround = false;
 
+let jobUnlocked = false;
 
-/* CONTROLS */
+
+/* =========================
+GAME STATS
+========================= */
+
+let money = 500;
+
+let hunger = 100;
+
+let energy = 100;
+
+let debt = 0;
+
+let day = 1;
+
+
+/* =========================
+CONTROLS
+========================= */
 
 const keys = {
-    left:false,
-    right:false
+
+left:false,
+
+right:false
+
 };
 
 
-/* MOVE */
+/* =========================
+UPDATE HUD
+========================= */
+
+function updateHUD(){
+
+document.getElementById("money")
+.innerText = money;
+
+document.getElementById("hunger")
+.innerText = hunger;
+
+document.getElementById("energy")
+.innerText = energy;
+
+document.getElementById("debt")
+.innerText = debt;
+
+document.getElementById("day")
+.innerText = day;
+
+}
+
+
+/* =========================
+GAME LOOP
+========================= */
 
 function update(){
 
-    if(keys.left){
-        x -= speed;
-    }
+/* MOVEMENT */
 
-    if(keys.right){
-        x += speed;
-    }
+if(keys.left){
 
+x -= speed;
 
-    /* GRAVITY */
+}
 
-    velocityY += gravity;
+if(keys.right){
 
-    y += velocityY;
+x += speed;
 
-
-    /* GROUND */
-
-    if(y >= 580){
-
-        y = 580;
-
-        velocityY = 0;
-
-        onGround = true;
-
-    }else{
-
-        onGround = false;
-
-    }
+}
 
 
-    /* WORLD LIMIT */
+/* GRAVITY */
 
-    x = Math.max(0, Math.min(2950,x));
+velocityY += gravity;
 
-
-    /* PLAYER */
-
-    player.style.left = x + "px";
-    player.style.top = y + "px";
+y += velocityY;
 
 
-    /* CAMERA */
+/* GROUND */
 
-    const screenWidth = window.innerWidth;
+if(y >= 580){
 
-    let cameraX = x - screenWidth / 2;
+y = 580;
 
-    cameraX = Math.max(
-        0,
-        Math.min(3000-screenWidth,cameraX)
-    );
+velocityY = 0;
 
+onGround = true;
 
-    world.style.transform =
-        `translateX(${-cameraX}px)`;
+}else{
 
+onGround = false;
 
-    /* JOB CENTER */
-
-    if(x > 1500 && x < 1900){
-
-        missionComplete();
-
-    }
+}
 
 
-    requestAnimationFrame(update);
+/* WORLD LIMIT */
+
+x = Math.max(
+0,
+Math.min(2950,x)
+);
+
+
+/* PLAYER POSITION */
+
+player.style.left =
+x + "px";
+
+player.style.top =
+y + "px";
+
+
+/* CAMERA */
+
+const screenWidth =
+window.innerWidth;
+
+let cameraX =
+x - screenWidth / 2;
+
+cameraX =
+Math.max(
+0,
+Math.min(
+3000-screenWidth,
+cameraX
+)
+);
+
+world.style.transform =
+`translateX(${-cameraX}px)`;
+
+
+/* =========================
+JOB CENTER DETECTION
+========================= */
+
+if(
+x > 1450 &&
+x < 1950
+){
+
+interactButton.style.display =
+"block";
+
+}else{
+
+interactButton.style.display =
+"none";
+
+}
+
+
+/* =========================
+GROCERY DETECTION
+========================= */
+
+if(
+x > 750 &&
+x < 1250
+){
+
+/* nothing yet */
+
+}
+
+
+requestAnimationFrame(update);
 
 }
 
 update();
 
 
-/* JUMP */
+/* =========================
+JUMP
+========================= */
 
 function jump(){
 
-    if(onGround){
+if(onGround){
 
-        velocityY = jumpPower;
+velocityY =
+jumpPower;
 
-        onGround = false;
+onGround = false;
 
-    }
+}
 
 }
 
 
-/* KEYBOARD */
+/* =========================
+INTERACT
+========================= */
 
-document.addEventListener("keydown",function(e){
-
-    if(e.key === "ArrowLeft" || e.key === "a"){
-        keys.left = true;
-    }
-
-    if(e.key === "ArrowRight" || e.key === "d"){
-        keys.right = true;
-    }
-
-    if(e.key === "ArrowUp" ||
-       e.key === "w" ||
-       e.key === " "){
-
-        jump();
-
-    }
-
-});
-
-
-document.addEventListener("keyup",function(e){
-
-    if(e.key === "ArrowLeft" || e.key === "a"){
-        keys.left = false;
-    }
-
-    if(e.key === "ArrowRight" || e.key === "d"){
-        keys.right = false;
-    }
-
-});
-
-
-/* MOBILE */
-
-function holdButton(id,direction){
-
-    const button =
-        document.getElementById(id);
-
-
-    button.addEventListener(
-        "touchstart",
-        function(e){
-
-            e.preventDefault();
-
-            keys[direction] = true;
-
-        }
-    );
-
-
-    button.addEventListener(
-        "touchend",
-        function(e){
-
-            e.preventDefault();
-
-            keys[direction] = false;
-
-        }
-    );
-
-
-    button.addEventListener(
-        "mousedown",
-        function(){
-
-            keys[direction] = true;
-
-        }
-    );
-
-
-    button.addEventListener(
-        "mouseup",
-        function(){
-
-            keys[direction] = false;
-
-        }
-    );
-
-}
-
-
-holdButton("left","left");
-holdButton("right","right");
-
-
-document.getElementById("jump")
-.addEventListener("touchstart",function(e){
-
-    e.preventDefault();
-
-    jump();
-
-});
-
-
-document.getElementById("jump")
-.addEventListener("mousedown",function(){
-
-    jump();
-
-});
-
-
-/* MISSION */
-
-function missionComplete(){
-
-    if(message.style.display === "block"){
-        return;
-    }
-
-    message.innerHTML =
-        "🏢 You found the Job Center.<br><br>" +
-        "Press ENTER to apply for work.";
-
-    message.style.display = "block";
-
-}
-
-
-/* ENTER */
-
-document.addEventListener("keydown",function(e){
-
-    if(e.key === "Enter" &&
-       x > 1500 &&
-       x < 1900){
-
-        message.innerHTML =
-            "📄 APPLICATION SUBMITTED<br><br>" +
-            "Your first job starts tomorrow.";
-
-        setTimeout(function(){
-
-            message.innerHTML =
-                "⚠️ But something is wrong...<br><br>" +
-                "The cost of living has increased.";
-
-        },2500);
-
-    }
-
-});
 function interact(){
 
-    if(x > 1500 && x < 1900){
+if(
+x > 1450 &&
+x < 1950
+){
 
-        message.innerHTML =
-            "📄 APPLICATION SUBMITTED<br><br>" +
-            "Your first job starts tomorrow.";
+if(!jobUnlocked){
 
-        message.style.display = "block";
+jobUnlocked = true;
 
-        setTimeout(function(){
+message.innerHTML =
 
-            message.innerHTML =
-                "⚠️ But something is wrong...<br><br>" +
-                "The cost of living has increased.";
+"📄 <b>JOB APPLICATION</b><br><br>" +
 
-        },2500);
+"You have been accepted for work.<br><br>" +
 
-    }
+"💼 Daily salary: $100<br>" +
+
+"⚡ Energy cost: 20";
+
+message.style.display =
+"block";
+
+
+document.getElementById(
+"missionTitle"
+).innerText =
+"MISSION COMPLETE";
+
+
+document.getElementById(
+"missionText"
+).innerText =
+"Return home to begin your first working day.";
+
+
+}else{
+
+message.innerHTML =
+
+"💼 <b>JOB CENTER</b><br><br>" +
+
+"You already have a job.";
+
+message.style.display =
+"block";
 
 }
 
-document.getElementById("interact")
-.addEventListener("touchstart",function(e){
+}
 
-    e.preventDefault();
+}
 
-    interact();
+
+/* =========================
+KEYBOARD
+========================= */
+
+document.addEventListener(
+"keydown",
+function(e){
+
+if(
+e.key === "ArrowLeft" ||
+e.key === "a"
+){
+
+keys.left = true;
+
+}
+
+
+if(
+e.key === "ArrowRight" ||
+e.key === "d"
+){
+
+keys.right = true;
+
+}
+
+
+if(
+e.key === "ArrowUp" ||
+e.key === "w" ||
+e.key === " "
+){
+
+jump();
+
+}
+
+
+if(e.key === "Enter"){
+
+interact();
+
+}
 
 });
 
-document.getElementById("interact")
-.addEventListener("click",function(){
 
-    interact();
+document.addEventListener(
+"keyup",
+function(e){
+
+if(
+e.key === "ArrowLeft" ||
+e.key === "a"
+){
+
+keys.left = false;
+
+}
+
+
+if(
+e.key === "ArrowRight" ||
+e.key === "d"
+){
+
+keys.right = false;
+
+}
 
 });
+
+
+/* =========================
+MOBILE MOVEMENT
+========================= */
+
+function holdButton(
+id,
+direction
+){
+
+const button =
+document.getElementById(id);
+
+
+button.addEventListener(
+"touchstart",
+function(e){
+
+e.preventDefault();
+
+keys[direction] = true;
+
+}
+);
+
+
+button.addEventListener(
+"touchend",
+function(e){
+
+e.preventDefault();
+
+keys[direction] = false;
+
+}
+);
+
+
+button.addEventListener(
+"mousedown",
+function(){
+
+keys[direction] = true;
+
+}
+);
+
+
+button.addEventListener(
+"mouseup",
+function(){
+
+keys[direction] = false;
+
+}
+);
+
+}
+
+
+holdButton(
+"left",
+"left"
+);
+
+holdButton(
+"right",
+"right"
+);
+
+
+/* =========================
+MOBILE JUMP
+========================= */
+
+document.getElementById(
+"jump"
+)
+.addEventListener(
+"touchstart",
+function(e){
+
+e.preventDefault();
+
+jump();
+
+}
+);
+
+
+document.getElementById(
+"jump"
+)
+.addEventListener(
+"click",
+function(){
+
+jump();
+
+}
+);
+
+
+/* =========================
+MOBILE INTERACT
+========================= */
+
+interactButton.addEventListener(
+"touchstart",
+function(e){
+
+e.preventDefault();
+
+interact();
+
+}
+);
+
+
+interactButton.addEventListener(
+"click",
+function(){
+
+interact();
+
+}
+);
+
+
+/* =========================
+CLOSE MESSAGE
+========================= */
+
+message.addEventListener(
+"click",
+function(){
+
+message.style.display =
+"none";
+
+});
+
+
+/* INITIAL HUD */
+
+updateHUD();
+
 </script>
 
 </body>
+
 </html>
 ```
